@@ -36,6 +36,9 @@ import SearchSharpIcon from "@material-ui/icons/SearchSharp";
 import { revenderProduto } from "index.js";
 import ContainerBusca from 'views/my/ContainerBusca';
 import { getFirestore } from 'firebase/firestore';
+import Produto from 'views/my/Produto';
+import { Box } from '@material-ui/core';
+import { SubHead } from 'views/ProductPage/SubHead';
 
 
 const useStyles = makeStyles(theme => ({
@@ -53,7 +56,7 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(4),
   },
   cardGrid: {
-    paddingTop: theme.spacing(4),
+    paddingTop: theme.spacing(3),
     paddingBottom: theme.spacing(8),
   },
   card: {
@@ -63,15 +66,14 @@ const useStyles = makeStyles(theme => ({
     minWidth: '120px',
   },
   cardMedia: {
-    paddingTop: '26.25%',
     [theme.breakpoints.up('md')]: {
-      minHeight: '300px',
+      height: '300px',
     },
     [theme.breakpoints.up('sm')]: {
-      minHeight: '300px',
+      height: '300px',
     },
     [theme.breakpoints.down('sm')]: {
-      minHeight: '360px'
+      height: '360px'
     }
   },
   cardContent: {
@@ -142,17 +144,17 @@ function Title(props) {
 }
 
 
-class ItemGridProduto extends React.Component {
+class ItemGridProdutoOff extends React.Component {
 
   constructor(props) {
     super(props);
     let item = props.produto;
     this.state = {
-      imgCapa: item.get('imgCapa'),
-      prodName: item.get('prodName'),
-      idProduto: item.get('idProduto'),
-      comissao: item.get('comissao'),
-      valorTotal: (item.get('prodValor')),
+      imgCapa: item.imgCapa,
+      prodName: item.prodName,
+      idProduto: item.idProduto,
+      comissao: item.comissao,
+      valorTotal: (item.prodValor),
       item: item
     };
     this.revender = this.revender.bind(this);
@@ -166,11 +168,11 @@ class ItemGridProduto extends React.Component {
     let obj = {
       caminhoImg: this.state.imgCapa,
       idProdut: this.state.idProduto,
-      labo: this.state.item.get('fabricante'),
+      labo: this.state.item.fabricante,
       produtoName: this.state.prodName,
       quantidade: 1,
-      valorTotal: this.state.item.get('prodValor'),
-      valorUni: this.state.item.get('prodValor'),
+      valorTotal: this.state.item.prodValor,
+      valorUni: this.state.item.prodValor,
       valorUniComComissao: this.state.valorTotal,
       valorTotalComComissao: this.state.valorTotal,
       comissaoUnidade: this.state.comissao,
@@ -186,7 +188,7 @@ class ItemGridProduto extends React.Component {
       let atualCom = this.state.comissao + 1;
       this.setState({
         comissao: atualCom,
-        valorTotal: (this.state.item.get('prodValor') + atualCom)
+        valorTotal: (this.state.item.prodValor + atualCom)
       });
     }
   }
@@ -196,7 +198,7 @@ class ItemGridProduto extends React.Component {
       let atualCom = this.state.comissao - 1;
       this.setState({
         comissao: atualCom,
-        valorTotal: (this.state.item.get('prodValor') + atualCom)
+        valorTotal: (this.state.item.prodValor + atualCom)
       });
     }
   }
@@ -254,7 +256,7 @@ let setTextPesquisa = valor => {
   textPesquisa = valor.target.value;
 };
 
-class ProdContainer extends React.Component {
+class ProdContainerOff extends React.Component {
 
   constructor(props) {
     super(props);
@@ -361,16 +363,77 @@ class ProdContainer extends React.Component {
 
 }
 
-export default function GridProdutosRevendas() {
+function ItemGridProduto({ classes, produto }) {
+
+  const { nomeProduto, idProduto, pathProduto } = produto;
+
+  const nomeString = nomeProduto.length > 25 ? `${nomeProduto.substring(0, 25)}...` : nomeProduto;
+
+  const openDetalhes = () => {
+
+  };
+
+  return (
+    <Grid item xs={12} sm={6} md={4}>
+      <Card className={classes.card} >
+        <CardMedia
+          className={classes.cardMedia}
+          image={pathProduto}
+          title={nomeProduto}
+        />
+        <CardContent className={classes.cardContent}>
+
+          <Typography>
+            {nomeString}
+          </Typography>
+          <br />
+
+
+          <Button onClick={openDetalhes} fullWidth color="verdin">
+            DETALHES
+          </Button>
+
+        </CardContent>
+
+      </Card>
+    </Grid>
+  );
+};
+
+function ProdContainer({ classes, state, setState }) {
+
+  const produtos = state.feed?.topProdutos;
+
+  if (state.pb) {
+
+    return <Pb />;
+
+  }
+
+
+  return (
+    <Box>
+      <SubHead
+				title="Produtos Em Alta"
+			/>
+      <Grid container className={classes.cardGrid} spacing={2}>
+        {produtos.map((item, i) => (
+          <Produto indice={i} capa={item.pathProduto} nome={item.nomeProduto} id={item.idProduto} prod={item} />
+        ))}
+      </Grid>
+    </Box>
+
+
+  );
+
+};
+
+export default function GridProdutosRevendas({ state, setState }) {
 
   const classes = useStyles();
 
   return (
-    <React.Fragment>
-      <br />
-      <br />
-      <ProdContainer class={classes} />
-    </React.Fragment>
+    <ProdContainer classes={classes} state={state} setState={setState} />
   );
 
-}
+};

@@ -642,6 +642,8 @@ function Conclusao({ classes, state, setState, salvar }) {
 
 export default function Checkout(props) {
 
+  const classes = useStyles();
+
   const [state, setState] = useState({
     lista: [],
     pb: true,
@@ -650,6 +652,7 @@ export default function Checkout(props) {
     usuario: null,
     status: 0
   });
+
 
   const returnEmpty = () => {
     setState((prevState) => ({
@@ -661,6 +664,7 @@ export default function Checkout(props) {
 
     abrirListaRevenda();
   };
+
 
   useEffect(() => {
 
@@ -682,9 +686,9 @@ export default function Checkout(props) {
         // User is signed in.
 
         const refDocUsuario = doc(db, 'Usuario', usr.uid);
-
         const docSnap = await getDoc(refDocUsuario);
         const docUsuario = docSnap.exists() ? docSnap.data() : null;
+        
         setState((prevState) => ({
           ...prevState,
           usuario: docUsuario
@@ -737,6 +741,7 @@ export default function Checkout(props) {
 
   }, []);
 
+
   const salvarRevenda = useCallback(() => {
 
     const listaDeProdutosFinal = getListaDeProdutos(state.lista);
@@ -783,15 +788,11 @@ export default function Checkout(props) {
 
   }, [state]);
 
-  const classes = useStyles();
-
-  console.log("State: ", state);
 
   if (!state.pagamento) {
 
-
-
     return <Pb />;
+
   }
 
   return (

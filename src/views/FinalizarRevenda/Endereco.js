@@ -80,15 +80,16 @@ export default function Endereco({ state, setState }) {
   return (
     <React.Fragment>
 
-      <Typography variant="h6" style={{marginBottom: 20}} gutterBottom>
+      <Typography variant="h6" style={{ marginBottom: 20 }} gutterBottom>
         Endereço
       </Typography>
 
       <Grid container spacing={3}>
-        
+
         <Grid item xs={12}>
           <TextField
             required
+            variant='outlined'
             label="Rua e N° da casa"
             onChange={setRua}
             fullWidth
@@ -100,6 +101,7 @@ export default function Endereco({ state, setState }) {
             onChange={setBairro}
             label="Bairro"
             required
+            variant='outlined'
             defaultValue={state.document.complemento}
             fullWidth
           />
@@ -108,6 +110,7 @@ export default function Endereco({ state, setState }) {
         <Grid item xs={12}>
           <TextField
             required
+            variant='outlined'
             label="Cidade"
             fullWidth
             disabled
@@ -115,10 +118,11 @@ export default function Endereco({ state, setState }) {
           />
         </Grid>
         <Grid item xs={12} >
-          <TextField id="state" name="estado" label="Estado" disabled defaultValue="Amazonas" fullWidth />
+          <TextField id="state" name="estado" label="Estado" variant='outlined' disabled defaultValue="Amazonas" fullWidth />
         </Grid>
         <Grid item xs={12}>
           <TextField
+            variant='outlined'
             required
             label="País"
             fullWidth

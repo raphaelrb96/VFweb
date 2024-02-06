@@ -1,5 +1,5 @@
 /*eslint-disable*/
-import React from "react";
+import React, { useEffect, useState } from "react";
 // nodejs library that concatenates classes
 import classNames from "classnames";
 import clsx from 'clsx';
@@ -68,7 +68,22 @@ import {
 
 import styles from "assets/jss/material-kit-pro-react/views/ecommerceStyle.js";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { doc, getDoc, getFirestore } from "firebase/firestore";
+import { initializeApp } from "firebase/app";
+import { SubHead } from "views/ProductPage/SubHead";
+
+const firebaseConfig = {
+	apiKey: "AIzaSyAtMQ-oTpBa3YNeLf8DTRYdKWDQxMXFuvE",
+	authDomain: "venda-favorita.firebaseapp.com",
+	databaseURL: "https://venda-favorita.firebaseio.com",
+	projectId: "venda-favorita",
+	storageBucket: "venda-favorita.appspot.com",
+	messagingSenderId: "978500802251",
+	appId: "1:978500802251:web:1aad0e093739f59969ed4e",
+	measurementId: "G-EK2ZQP9BKK"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const useStyles = makeStyles(theme => ({
 	root: {
@@ -119,7 +134,8 @@ const useStyles = makeStyles(theme => ({
 	}
 }));
 
-class DashContent extends React.Component {
+/*
+class DashContentOff extends React.Component {
 
 	constructor(props) {
 		super(props);
@@ -538,7 +554,6 @@ class DashContent extends React.Component {
 			<Container maxWidth="lg" className={classes.container}>
 				<Grid container spacing={3}>
 
-					{/* Recent Orders */}
 					<Grid item xs={12}>
 						<GridProdutosRevendas />
 					</Grid>
@@ -550,6 +565,7 @@ class DashContent extends React.Component {
 	}
 
 }
+*/
 
 let apelidoNovoUsuario = '';
 
@@ -557,16 +573,114 @@ let setApelido = valor => {
 	apelidoNovoUsuario = valor.target.value;
 };
 
+const verificarRegistro = async (usr) => {
+
+	const refDocUsuario = doc(db, 'Usuario', usr.uid);
+	const docSnap = await getDoc(refDocUsuario);
+	const docUsuario = docSnap.exists() ? docSnap.data() : null;
+
+	if (docUsuario.userName === null || docUsuario.userName === undefined) {
+		return null;
+	} else {
+		if (docUsuario.userName.length > 0) {
+		} else {
+			return null;
+		}
+	}
+
+	return docUsuario;
+};
+
+const getFeedDocument = async () => {
+	const refDoc = doc(db, 'Feed', 'Main');
+	const docSnap = await getDoc(refDoc);
+	const docData = docSnap.exists() ? docSnap.data() : null;
+	return docData;
+};
+
+function DashContent({ state, setState, classes }) {
+
+
+	if (state.pb) {
+		return (
+			<Container maxWidth="lg" className={classes.container}>
+				<Grid container spacing={3}>
+					<Pb />
+				</Grid>
+			</Container>
+		);
+	}
+
+	return (
+
+		<Container maxWidth="lg" className={classes.container}>
+
+			<Grid container spacing={3}>
+
+				<Grid item xs={12}>
+					<SubHead
+						title="INFORMAÇÕES"
+					/>
+					<GridProdutosRevendas state={state} setState={setState} />
+				</Grid>
+			</Grid>
+		</Container>
+
+	);
+};
+
 export default function Dashboard() {
 
-	React.useEffect(() => {
-		window.scrollTo(0, 0);
-		document.body.scrollTop = 0;
+
+	const [state, setState] = useState({
+		usuario: null,
+		feed: null,
+		pb: true,
+		revendas: [],
+		totalAReceber: 0,
+		ultimaVenda: 0,
+		comissaoAfilidados: 0,
+		comissoes: [],
+		validandoAfiliado: false,
+		apelidoNovoUsuario: ''
 	});
+
+	useEffect(() => {
+		window.scrollTo(0, 0);
+		getAuth().onAuthStateChanged(async usr => {
+			if (usr) {
+
+				if (usr.isAnonymous) {
+					abrirLogin();
+				} else {
+
+					const docUsuario = await verificarRegistro(usr);
+
+					if (!docUsuario) {
+						abrirFormulario();
+						return;
+					}
+
+					const docFeed = await getFeedDocument();
+
+					setState((prevState) => ({
+						...prevState,
+						usuario: docUsuario,
+						feed: docFeed,
+						pb: false
+					}));
+				}
+
+			} else {
+				abrirLogin();
+			}
+
+		});
+	}, []);
 
 	const classes = useStyles();
 
-	const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+	//const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
 
 	const cabecalho = (
@@ -604,13 +718,9 @@ export default function Dashboard() {
 
 		<div>
 
-			<div>
-
-				<DashContent class={classes} />
-
-			</div>
-
+			<DashContent classes={classes} state={state} setState={setState} />
 			<Rodape />
+
 		</div>
 
 	);

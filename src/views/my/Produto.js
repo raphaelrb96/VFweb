@@ -56,14 +56,17 @@ const useStyles = makeStyles(theme => ({
   },
   cardMedia: {
     paddingTop: '26.25%',
+    [theme.breakpoints.up('lg')]: {
+      height: '400px',
+    },
     [theme.breakpoints.up('md')]: {
-      height: '330px',
+      minHeight: '400px',
     },
-    [theme.breakpoints.down('sm')]: {
-      height: '200px'
+    [theme.breakpoints.up('sm')]: {
+      minHeight: '320px'
     },
-    [theme.breakpoints.down('xs')]: {
-      height: '150px'
+    [theme.breakpoints.up('xs')]: {
+      minHeight: '240px',
     }
   },
   cardContent: {
@@ -74,7 +77,7 @@ const useStyles = makeStyles(theme => ({
     padding: '6px',
     marginBottom: '0px',
     flexDirection: 'column',
-    
+
   },
   btnContainer: {
     [theme.breakpoints.down('xs')]: {
@@ -89,14 +92,14 @@ const useStyles = makeStyles(theme => ({
     marginTop: '14px',
     marginBottom: theme.spacing(1),
     color: grayColor[1]
-    
+
   },
   container: {
     display: 'flex',
     justifyContent: 'center',
     alignContent: 'center',
     alignItems: 'center',
-    
+
   }
 }));
 
@@ -147,13 +150,13 @@ export default function Produto(props) {
 
 
 
-  const idCategoria = Number(Object.getOwnPropertyNames(prod.categorias)[0]);
-  const categ = CATEGORIA_LIST[idCategoria];
+  const idCategoria = prod.categorias ? Number(Object.getOwnPropertyNames(prod.categorias)[0]) : -1;
+  const categ = idCategoria !== -1 ? CATEGORIA_LIST[idCategoria] : null;
 
 
   return (
 
-    <Grid  item xs={6} sm={6} md={4}>
+    <Grid item xs={6} sm={6} md={4}>
 
       <Link className={classes.container} to={'/produto/?id=' + props.id} >
         <Card className={classes.card} >
@@ -163,11 +166,17 @@ export default function Produto(props) {
             title={nome}
           />
           <Box className={classes.cardContent}>
-            <Typography variant="caption" gutterBottom>
-              <strong>
-                {categ}
-              </strong>
-            </Typography>
+            {
+              categ ?
+                <Typography variant="caption" gutterBottom>
+                  <strong>
+                    {categ}
+                  </strong>
+                </Typography>
+                :
+                null
+            }
+
             <Typography variant='body2' className={classes.title}>
               {title}
             </Typography>

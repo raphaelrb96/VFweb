@@ -64,6 +64,7 @@ export default function Cliente({ state, setState }) {
           <TextField
             required
             label="Nome do cliente"
+            variant='outlined'
             fullWidth
             defaultValue={state.document.nomeCliente}
             onChange={setNomeUser}
@@ -72,6 +73,7 @@ export default function Cliente({ state, setState }) {
         <Grid item xs={12}>
           <TextField
             required
+            variant='outlined'
             onChange={setTelefone}
             label="Número do cliente"
             fullWidth
@@ -81,6 +83,7 @@ export default function Cliente({ state, setState }) {
         <Grid item xs={12}>
           <TextField
             required
+            variant='outlined'
             onChange={setObs}
             label="Observações"
             fullWidth
