@@ -140,7 +140,6 @@ class AmaCompras extends React.Component {
     getDocs(q).then(querySnapshot => {
 
         let prods = querySnapshot.docs;
-        //listaProdutosPrincipal = prods;
         let tamanho = querySnapshot.size;
 
         let promocoes = Array();

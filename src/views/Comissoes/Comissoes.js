@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 // nodejs library that concatenates classes
 import classNames from "classnames";
 // core components
@@ -18,20 +18,20 @@ import Close from "@material-ui/icons/Close";
 import Remove from "@material-ui/icons/Remove";
 import Add from "@material-ui/icons/Add";
 import Pb from 'views/my/Pb';
-import {mFirebase, mUser, mUid, removerDaRevenda, atualizarProdutoRevenda, abrirFormulario, voltar, finalizarRevenda, abrirLogin} from 'index.js';
+import { mFirebase, mUser, mUid, removerDaRevenda, atualizarProdutoRevenda, abrirFormulario, voltar, finalizarRevenda, abrirLogin } from 'index.js';
 
 import {
-  title,
-  main,
-  mainRaised,
-  mrAuto,
-  mlAuto,
-  container,
-  description,
-  blackColor,
-  whiteColor,
-  grayColor,
-  hexToRgb
+	title,
+	main,
+	mainRaised,
+	mrAuto,
+	mlAuto,
+	container,
+	description,
+	blackColor,
+	whiteColor,
+	grayColor,
+	hexToRgb
 } from "assets/jss/material-kit-pro-react.js";
 
 import AppBar from '@material-ui/core/AppBar';
@@ -55,71 +55,177 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import pricingStyle from "assets/jss/material-kit-pro-react/views/pricingSections/pricingStyle.js";
 
 import Container from '@material-ui/core/Container';
-import { getFirestore } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, getFirestore, limit, orderBy, query, where } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { initializeApp } from "firebase/app";
+import { interfaceMain } from "index";
+
+const firebaseConfig = {
+	apiKey: "AIzaSyAtMQ-oTpBa3YNeLf8DTRYdKWDQxMXFuvE",
+	authDomain: "venda-favorita.firebaseapp.com",
+	databaseURL: "https://venda-favorita.firebaseio.com",
+	projectId: "venda-favorita",
+	storageBucket: "venda-favorita.appspot.com",
+	messagingSenderId: "978500802251",
+	appId: "1:978500802251:web:1aad0e093739f59969ed4e",
+	measurementId: "G-EK2ZQP9BKK"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const useStyles2 = makeStyles({
-  depositContext: {
-    flex: 1,
-  },
-  
-  btIndisp: {
-    color: "gray",
-  },
+	depositContext: {
+		flex: 1,
+	},
+
+	btIndisp: {
+		color: "gray",
+	},
 });
 
+const useStyles = makeStyles(theme => ({
+	...pricingStyle,
+}));
+
+const getStatus = (s) => {
+
+	if (s === 1) {
+		return 'Confirmando';
+	} else if (s === 2) {
+		return 'Confirmada';
+	} else if (s === 3) {
+		return 'Cancelada';
+	} else if (s === 4) {
+		return 'Saiu pra entrega';
+	} else if (s === 5) {
+		return 'Concluida';
+	} else {
+		return 'Aguarde';
+	}
+
+};
+
+const verificarRegistro = async (usr) => {
+
+	const refDocUsuario = doc(db, 'Usuario', usr.uid);
+	const docSnap = await getDoc(refDocUsuario);
+	const docUsuario = docSnap.exists() ? docSnap.data() : null;
+
+	if (docUsuario.userName === null || docUsuario.userName === undefined) {
+		return null;
+	} else {
+		if (docUsuario.userName.length > 0) {
+		} else {
+			return null;
+		}
+	}
+
+	return docUsuario;
+};
+
+const getComissoes = async (uid) => {
+	const q = query(collection(db, 'MinhasRevendas', 'Usuario', uid), orderBy("hora", "desc"), limit(400));
+	const querySnapshot = await getDocs(q);
+
+	if (!querySnapshot) return null;
+
+	const prods = querySnapshot.docs;
+	if (!prods) return null;
+
+	const tamanho = querySnapshot.size;
+
+	let list = [];
+	let total = 0;
+
+	for (let i = 0; i < tamanho; i++) {
+		const item = prods[i];
+		const data = item.data();
+
+		if (item.statusCompra === 5) {
+
+
+			if (item.pagamentoRecebido === false) {
+
+				let precoTT = item.comissaoTotal;
+				total = total + precoTT;
+
+			}
+
+
+		}
+
+		list.push(data);
+	}
+
+	return { list, total };
+};
+
+const getBonus = async (uid) => {
+	const q = query(collection(db, 'MinhasComissoesAfiliados', 'Usuario', uid), orderBy("hora", "desc"), limit(400));
+	const querySnapshot = await getDocs(q);
+
+	if (!querySnapshot) return null;
+
+	const qDocs = querySnapshot.docs;
+	if (!qDocs) return null;
+
+	const tamanho = querySnapshot.size;
+
+	let list = [];
+	let total = 0;
+
+	for (let i = 0; i < tamanho; i++) {
+		const item = qDocs[i];
+		const data = item.data();
+
+		if (item.statusComissao === 5) {
+
+			if (item.pagamentoRecebido === false) {
+
+				let precoTT = item.comissao;
+				total = total + precoTT;
+
+			}
+
+		}
+
+		list.push(data);
+	}
+
+	return { list, total };
+};
+
 function Title(props) {
-  return (
-    <h3 style={{color: '#060D51'}} >
-      <b>
-      {props.children}
-      </b>
-    </h3>
-  );
-}
-
-const useStyles = makeStyles(pricingStyle);
-
-function getStatus(s) {
-
-  if (s === 1) {
-    return 'Confirmando';
-  } else if (s === 2) {
-    return 'Confirmada';
-  } else if (s === 3) {
-    return 'Cancelada';
-  } else if (s === 4) {
-    return 'Saiu pra entrega';
-  } else if (s === 5) {
-    return 'Concluida';
-  } else {
-    return 'Aguarde';
-  }
-
-}
-
+	return (
+		<h3 style={{ color: '#060D51' }} >
+			<b>
+				{props.children}
+			</b>
+		</h3>
+	);
+};
 
 function FinancaComissoes(props) {
-  const classes = useStyles2();
+	const classes = useStyles2();
 
-  
-  return (
-    <React.Fragment>
-      <Title>{props.title}</Title>
-      <Typography component="p" variant="h4">
-        R${props.total},00
-      </Typography>
-      <Typography color="textSecondary" className={classes.depositContext}>
-        {props.texto}
-      </Typography>
-      <div>
-        <Link className={classes.btIndisp}>
-        	Pagamento no sábado
-        </Link>
-      </div>
-    </React.Fragment>
-  );
-}
+
+	return (
+		<React.Fragment>
+			<Title>{props.title}</Title>
+			<Typography component="p" variant="h4">
+				R${props.total},00
+			</Typography>
+			<Typography color="textSecondary" className={classes.depositContext}>
+				{props.texto}
+			</Typography>
+			<div>
+				<Link className={classes.btIndisp}>
+					Pagamento no sábado
+				</Link>
+			</div>
+		</React.Fragment>
+	);
+};
 
 class ItemComissaoVenda extends React.Component {
 
@@ -133,42 +239,42 @@ class ItemComissaoVenda extends React.Component {
 
 
 		let daS = new Date(this.props.date);
-     	let da = daS.toLocaleDateString() + ' às ' + daS.toLocaleTimeString();
+		let da = daS.toLocaleDateString() + ' às ' + daS.toLocaleTimeString();
 
-		return(
+		return (
 
 			<GridItem style={{
 				marginRight: '0px',
 				marginLeft: '0px'
 			}} md={3} sm={3}>
-	          <Card raised pricing>
-	            <CardBody pricing>
-	              <h6
-	              >
-	                {da}
-	              </h6>
-	              <h2 >
-	                <small>R$</small>{this.props.comissao},00
-	              </h2>
-	              <ul>
+				<Card raised pricing>
+					<CardBody pricing>
+						<h6
+						>
+							{da}
+						</h6>
+						<h2 >
+							<small>R$</small>{this.props.comissao},00
+						</h2>
+						<ul>
 
-	              	<li>
-	                  <b>{this.props.status}</b>
-	                </li>
+							<li>
+								<b>{this.props.status}</b>
+							</li>
 
-	                <li>
-	                  {this.props.nome}
-	                </li>
-	                <li>
-	                  {this.props.telefone}
-	                </li>
-	                
-	                
-	              </ul>
-	              
-	            </CardBody>
-	          </Card>
-	        </GridItem>
+							<li>
+								{this.props.nome}
+							</li>
+							<li>
+								{this.props.telefone}
+							</li>
+
+
+						</ul>
+
+					</CardBody>
+				</Card>
+			</GridItem>
 
 		);
 
@@ -181,47 +287,47 @@ class ItemComissaoAfiliados extends React.Component {
 
 	constructor(props) {
 		super(props);
-		
+
 
 	}
 
 	render() {
 
 		let daS = new Date(this.props.date);
-     	let da = daS.toLocaleDateString() + ' às ' + daS.toLocaleTimeString();
+		let da = daS.toLocaleDateString() + ' às ' + daS.toLocaleTimeString();
 
-		return(
+		return (
 
 			<GridItem style={{
 				marginRight: '0px',
 				marginLeft: '0px'
 			}} xs={12} md={4} sm={3}>
-	          <Card raised pricing>
-	            <CardBody pricing>
-	              <h6
-	              >
-	                {da}
-	              </h6>
-	              <h2 >
-	                <small>R$</small>{this.props.comissao},00
-	              </h2>
-	              <ul>
+				<Card raised pricing>
+					<CardBody pricing>
+						<h6
+						>
+							{da}
+						</h6>
+						<h2 >
+							<small>R$</small>{this.props.comissao},00
+						</h2>
+						<ul>
 
-	              	<li>
-	                  <b>{this.props.status}</b>
-	                </li>
-	                <li>
-	                  {this.props.title}
-	                </li>
-	                <li>
-	                  {this.props.descricao}
-	                </li>
-	               
-	              </ul>
-	              
-	            </CardBody>
-	          </Card>
-	        </GridItem>
+							<li>
+								<b>{this.props.status}</b>
+							</li>
+							<li>
+								{this.props.title}
+							</li>
+							<li>
+								{this.props.descricao}
+							</li>
+
+						</ul>
+
+					</CardBody>
+				</Card>
+			</GridItem>
 
 		);
 
@@ -230,355 +336,156 @@ class ItemComissaoAfiliados extends React.Component {
 
 }
 
+function ContentMain({ classes, state }) {
 
-class ContentMain extends React.Component {
-
-	constructor(props) {
-		super(props);
-
-		this.state = {
-			usuario: null,
-			minhasVendas: [],
-			totalComissoesVendas: 0,
-			comissoesAfiliados: [],
-			totalComissoesAfilidados: 0,
-	        totalAReceber: 0,
-	        pb: true,
-		};
-
-		this.carregarComissoes = this.carregarComissoes.bind(this);
-		this.verificarRegistro = this.verificarRegistro.bind(this);
-		this.carregarComissoesAfiliados = this.carregarComissoesAfiliados.bind(this);
+	const listComissoesVendas = (
 
-	}
 
+		state.minhasVendas.map((item, i) => (
 
-	componentDidMount() {
 
-	    
 
-	    if (mUser === null || mUser === undefined || mUser.isAnonymous) {
+			<ItemComissaoVenda comissao={item.comissaoTotal} date={item.hora} status={getStatus(item.statusCompra)} nome={item.nomeCliente} telefone={item.phoneCliente} />
 
-	      getAuth().onAuthStateChanged(user => {
-	        if (user) {
-	          // User is signed in.
+		))
 
-	          if (user.isAnonymous) {
-	          	abrirLogin();
-	          } else {
-	          	this.verificarRegistro(user);
-	          }
-	          
-	          
+	);
 
-	        }
-	      });
+	const listComissoesAfiliados = (
 
-	    } else {
-	    	if (mUser.isAnonymous) {
-	    		abrirLogin();
-	    	} else {
-	    		this.verificarRegistro(mUser);
-	    	}
-	      
 
-	    }
-	    
-	    
-	}
+		state.comissoesAfiliados.map((item, i) => (
 
-	verificarRegistro(usr) {
 
-		console.log('verificarRegistro');
 
-		getFirestore()
-	      .collection("Usuario")
-	      .doc(usr.uid)
-	      .get()
-	      .then(doc => {
-	        if (doc === null || doc === undefined) {
-	          abrirFormulario();
-	          console.log('abrirFormulario');
-	        } else {
+			<ItemComissaoAfiliados comissao={item.comissao} date={item.hora} status={getStatus(item.statusComissao)} descricao={item.descricao} title={item.titulo} />
 
-	        	if (doc.get('userName') === null || doc.get('userName') === undefined) {
-	        		abrirFormulario();
-	          		console.log('abrirFormulario');
-	        	} else {
+		))
 
-	        		if (doc.get('userName').length > 0) {
-	        			console.log(doc.get('userName'));
-	        			this.setState({
-							usuario: doc
-						});
-	        			this.carregarComissoes(usr);
-	        			console.log('carregarComissoes');
-	        		} else {
-	        			abrirFormulario();
-	          			console.log('abrirFormulario');
-	          			return;
-	        		}
+	);
 
-	        		
-	        	}
 
-	        	
-	        }
-	      });
-	}
+	return (
 
-	carregarComissoes(usr) {
-	    const db = getFirestore();
-	      db.settings({timestampsInSnapshots: true});
+		<div>
 
-	      db.collection('MinhasRevendas')
-	              .doc('Usuario')
-	              .collection(usr.uid)
-	              .orderBy("hora", "desc")
-	              .onSnapshot(querySnapshot => {
+			<Container maxWidth="lg" style={{ paddingTop: '80px', paddingBottom: '0px', }} >
 
+				<Grid container spacing={3}>
 
-	                if (querySnapshot === null || querySnapshot === undefined) {
-
-
-	                  this.setState({
-							minhasVendas: [],
-					        totalComissoesVendas: 0,
-						});
-
-
-
-	                } else {
-
-	                  let prodsCart = querySnapshot.docs;
-
-	                  if (prodsCart.length === 0) {
-
-
-	                    this.setState({
-							minhasVendas: [],
-					        totalComissoesVendas: 0,
-						});
-
-
-
-	                  } else {
-
-	                    let somaTT = 0;
-
-	                    prodsCart.map(item => {
-	                      if (item.get('statusCompra') === 5) {
-
-
-	                      		if (item.get('pagamentoRecebido') === false) {
-
-									let precoTT = item.get('comissaoTotal');
-	                        		somaTT = somaTT + precoTT;
-
-	                      		}
-
-	                        
-	                      }
-	                    });
-
-	                    let uv = prodsCart[0].get('hora');
-
-	                    this.setState({
-							minhasVendas: prodsCart,
-					        totalComissoesVendas: somaTT,
-						});
-
-	                  }
-
-	                }
-
-	                this.carregarComissoesAfiliados(usr);
-
-	              });
-	}
-
-
-	carregarComissoesAfiliados(usr) {
-
-	  	const db = getFirestore();
-	    db.settings({timestampsInSnapshots: true});
-
-
-	  	let ref = db.collection('MinhasComissoesAfiliados').doc('Usuario').collection(usr.uid);
-
-	  	ref.orderBy("hora", "desc").onSnapshot(querySnapshot => {
-
-	  		if (querySnapshot === null || querySnapshot === undefined) {
-
-
-	  			this.setState({
-	  				pb: false
-	  			});
-
-
-	  		} else {
-
-	  			let comissoesDeAfiliados = querySnapshot.docs;
-
-	  			if (comissoesDeAfiliados.length === 0) {
-
-
-	                    this.setState({
-							pb: false
-						});
-
-
-
-	            } else {
-
-
-	            	let somaComAfil = 0;
-
-	            	comissoesDeAfiliados.map(item => {
-
-
-	            		if (item.get('statusComissao') === 5) {
-
-
-	                      		if (item.get('pagamentoRecebido') === false) {
-
-									let precoTT = item.get('comissao');
-	                        		somaComAfil = somaComAfil + precoTT;
-
-	                      		}
-
-	                        
-	                      }
-
-
-	            	});
-
-
-	            	let tudo = somaComAfil + this.state.totalComissoesVendas;
-
-
-	            	this.setState({
-						pb: false,
-						comissoesAfiliados: comissoesDeAfiliados,
-						totalComissoesAfilidados: somaComAfil,
-						totalAReceber: tudo
-					});
-
-
-	            }
-
-
-	  		}
-
-	  	});
-
-
-	}
-
-	render() {
-
-		let {classes} = this.props;
-
-		let listComissoesVendas = (
-
-
-			this.state.minhasVendas.map((item, i) => (
-
-			
-
-				<ItemComissaoVenda comissao={item.get('comissaoTotal')} date={item.get('hora')} status={getStatus(item.get('statusCompra'))} nome={item.get('nomeCliente')} telefone={item.get('phoneCliente')} />
-
-			))
-
-		);
-
-		let listComissoesAfiliados = (
-
-
-			this.state.comissoesAfiliados.map((item, i) => (
-
-				
-
-				<ItemComissaoAfiliados comissao={item.get('comissao')} date={item.get('hora')} status={getStatus(item.get('statusComissao'))} descricao={item.get('descricao')} title={item.get('titulo')} />
-
-			))
-
-		);
-
-
-		return(
-
-			<div>
-
-				<Container maxWidth="lg" style={{paddingTop: '10px', paddingBottom: '30px',}} >
-
-					<Grid container spacing={3}>
-
-							<Grid item xs={12} md={4} lg={4}>
-				              <Paper style={{height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column'}}>
-				                <FinancaComissoes title="Total à receber" total={this.state.totalAReceber} texto="Tudo que você tem a receber juntando vendas e afiliados" />
-				              </Paper>
-				            </Grid>
-
-				            <Grid item xs={12} md={4} lg={4}>
-				              <Paper style={{height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column'}}>
-				                <FinancaComissoes title="Revendas" total={this.state.totalComissoesVendas} texto="Esse é o valor da sua comissão pelas revendas que você gerou na VendaFavorita" />
-				              </Paper>
-				            </Grid>
-
-				            <Grid item xs={12} md={4} lg={4}>
-				              <Paper style={{height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column'}}>
-				                <FinancaComissoes title="Afiliados" total={this.state.totalComissoesAfilidados} texto="Esse é o valor da sua comissão gerada pela sua rede de afiliados" />
-				              </Paper>
-				            </Grid>
-
+					<Grid item xs={12} md={4} lg={4}>
+						<Card raised style={{ height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff' }}>
+							<FinancaComissoes title="Total à receber" total={state.totalAReceber} texto="Tudo que você tem a receber juntando vendas e afiliados" />
+						</Card>
 					</Grid>
-				</Container>
 
-				<div style={{marginTop: "20px"}} >
-			        <div className={classes.pricingSection}>
+					<Grid item xs={12} md={4} lg={4}>
+						<Card raised style={{ height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff' }}>
+							<FinancaComissoes title="Revendas" total={state.totalComissoesVendas} texto="Esse é o valor da sua comissão pelas revendas que você gerou na VendaFavorita" />
+						</Card>
+					</Grid>
 
-			          	<h3 style={{marginTop: "20px", marginBottom: "40px"}} className={classNames(classes.features, classes.textCenter, classes.cardTitle)}>Comissões de Revendas</h3>
+					<Grid item xs={12} md={4} lg={4}>
+						<Card raised style={{ height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff' }}>
+							<FinancaComissoes title="Afiliados" total={state.totalComissoesAfilidados} texto="Esse é o valor da sua comissão gerada pela sua rede de afiliados" />
+						</Card>
+					</Grid>
 
-					    <GridContainer style={{marginRight: "15px", marginLeft: "15px"}}>
+				</Grid>
+			</Container>
 
-					        {listComissoesVendas}
+			<div style={{ marginTop: "20px" }} >
+				<div className={classes.pricingSection}>
 
-					    </GridContainer>
-					</div>
-			    </div>
+					<h3 style={{ marginTop: "20px", marginBottom: "40px" }} className={classNames(classes.features, classes.textCenter, classes.cardTitle)}>Comissões de Revendas</h3>
 
-			    <div style={{marginTop: "20px"}} >
-			        <div className={classes.pricingSection}>
+					<GridContainer style={{ marginRight: "15px", marginLeft: "15px" }}>
 
-			          	<h3 style={{marginTop: "20px", marginBottom: "40px"}} className={classNames(classes.features, classes.textCenter, classes.cardTitle)}>Comissões de Afiliados</h3>
+						{listComissoesVendas}
 
-					    <GridContainer style={{marginRight: "15px", marginLeft: "15px"}}>
-
-					        {listComissoesAfiliados}
-
-					    </GridContainer>
-					</div>
-			    </div>
-
+					</GridContainer>
+				</div>
 			</div>
 
+			<div style={{ marginTop: "20px" }} >
+				<div className={classes.pricingSection}>
 
-			
+					<h3 style={{ marginTop: "20px", marginBottom: "40px" }} className={classNames(classes.features, classes.textCenter, classes.cardTitle)}>Comissões de Afiliados</h3>
 
-		);
+					<GridContainer style={{ marginRight: "15px", marginLeft: "15px" }}>
+
+						{listComissoesAfiliados}
+
+					</GridContainer>
+				</div>
+			</div>
+
+		</div>
 
 
-	}
 
 
-}
+	);
+};
 
 
 export default function Comissoes(props) {
 
-  const classes = useStyles();
+	const classes = useStyles();
+
+	const [state, setState] = useState({
+		usuario: null,
+		minhasVendas: [],
+		totalComissoesVendas: 0,
+		comissoesAfiliados: [],
+		totalComissoesAfilidados: 0,
+		totalAReceber: 0,
+		pb: true,
+	});
+
+	useEffect(() => {
+		window.scrollTo(0, 0);
+		getAuth().onAuthStateChanged(async usr => {
+			if (usr) {
+
+				if (usr.isAnonymous) {
+					abrirLogin();
+				} else {
+
+					const docUsuario = await verificarRegistro(usr);
+
+					if (!docUsuario) {
+						abrirFormulario();
+						return;
+					}
+
+					const resultComissoes = await getComissoes(usr.uid);
+					const listComissoes = resultComissoes ? resultComissoes.list : [];
+					const totalComissoes = resultComissoes ? resultComissoes.total : 0;
+
+					const resultBonus = await getBonus(usr.uid);
+					const listBonus = resultBonus ? resultBonus.list : [];
+					const totalBonus = resultBonus ? resultBonus.total : 0;
+
+					setState((prevState) => ({
+						...prevState,
+						pb: false,
+						usuario: docUsuario,
+						minhasVendas: listComissoes,
+						comissoesAfiliados: listBonus,
+						totalComissoesVendas: totalComissoes,
+						totalComissoesAfilidados: totalBonus,
+						totalAReceber: (totalBonus + totalComissoes)
+					}));
+				}
+
+			} else {
+				abrirLogin();
+			}
+
+		});
+	}, []);
 
 
-  return <ContentMain classes={classes} />;
+	return <ContentMain classes={classes} state={state} />;
 }
