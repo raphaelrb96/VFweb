@@ -73,15 +73,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const useStyles2 = makeStyles({
+const useStyles2 = makeStyles(theme => ({
 	depositContext: {
 		flex: 1,
+		alignItems: 'flex-end',
+		marginTop: '10px'
 	},
 
 	btIndisp: {
 		color: "gray",
 	},
-});
+}));
 
 const useStyles = makeStyles(theme => ({
 	...pricingStyle,
@@ -218,11 +220,7 @@ function FinancaComissoes(props) {
 			<Typography color="textSecondary" className={classes.depositContext}>
 				{props.texto}
 			</Typography>
-			<div>
-				<Link className={classes.btIndisp}>
-					Pagamento no sábado
-				</Link>
-			</div>
+			
 		</React.Fragment>
 	);
 };
