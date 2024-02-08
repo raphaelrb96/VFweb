@@ -101,32 +101,32 @@ class AmaCompras extends React.Component {
 
     getDocs(q).then(querySnapshot => {
 
-        let prods = querySnapshot.docs;
-        //listaProdutosPrincipal = prods;
-        let tamanho = querySnapshot.size;
+      let prods = querySnapshot.docs;
+      //listaProdutosPrincipal = prods;
+      let tamanho = querySnapshot.size;
 
-        let promocoes = Array();
+      let promocoes = Array();
 
-        for (var i = 0; i < prods.length; i++) {
-          let objeto = prods[i];
+      for (var i = 0; i < prods.length; i++) {
+        let objeto = prods[i];
 
-          promocoes.push(objeto);
-          if (promocoes.length >= 3) {
-            break;
-          }
+        promocoes.push(objeto);
+        if (promocoes.length >= 3) {
+          break;
         }
+      }
 
-        this.setState({
-          pb: false,
-          soProduto: true,
-          produtos: prods,
-          promos: promocoes,
-        });
-
-
-      }).catch(error => {
-        console.log(error.message);
+      this.setState({
+        pb: false,
+        soProduto: true,
+        produtos: prods,
+        promos: promocoes,
       });
+
+
+    }).catch(error => {
+      console.log(error.message);
+    });
 
     this.setState({
       pb: true
@@ -136,34 +136,34 @@ class AmaCompras extends React.Component {
   handlerCategoria(cat) {
 
     const q = query(collection(db, "produtos"), where('categorias.' + cat, '==', true), where("disponivel", "==", true), limit(300));
-    
+
     getDocs(q).then(querySnapshot => {
 
-        let prods = querySnapshot.docs;
-        let tamanho = querySnapshot.size;
+      let prods = querySnapshot.docs;
+      let tamanho = querySnapshot.size;
 
-        let promocoes = Array();
+      let promocoes = Array();
 
-        for (var i = 0; i < prods.length; i++) {
-          let objeto = prods[i];
-          promocoes.push(objeto);
+      for (var i = 0; i < prods.length; i++) {
+        let objeto = prods[i];
+        promocoes.push(objeto);
 
-          if (promocoes.length >= 3) {
-            break;
-          }
+        if (promocoes.length >= 3) {
+          break;
         }
+      }
 
-        this.setState({
-          pb: false,
-          soProduto: true,
-          produtos: prods,
-          promos: promocoes,
-        });
-
-
-      }).catch(error => {
-        console.log(error.message);
+      this.setState({
+        pb: false,
+        soProduto: true,
+        produtos: prods,
+        promos: promocoes,
       });
+
+
+    }).catch(error => {
+      console.log(error.message);
+    });
 
     this.setState({
       pb: true
@@ -229,8 +229,20 @@ class AmaCompras extends React.Component {
 
 
       const ContentFinal = () => {
-        const elementTopo = promos.length >= 3 ? <SectionLatestOffers list={promos} /> : null;
-        const elementTopoFinal = soProduto ? null : elementTopo;
+
+
+
+        if (soProduto) {
+          return (
+            <div style={{ padding: '16px', marginTop: '50px' }}>
+              <SectionProducts soProdutos={soProduto} list={produtos} />
+              <ContainerBusca pesquisar={this.handlerPesquisa} categoria={this.handlerCategoria} />
+              <br />
+            </div>
+          );
+        }
+
+
         return (
           <div>
             <div style={{ padding: '16px' }}>
@@ -241,6 +253,7 @@ class AmaCompras extends React.Component {
           </div>
         );
       };
+
 
       return <ContentFinal />;
 

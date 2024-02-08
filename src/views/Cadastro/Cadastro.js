@@ -37,13 +37,27 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 
 
 
-import {voltar, totalCheckout, abrirPainelRevendas, abrirMeuPerfil} from "index.js";
-import { mUser, mUid} from 'index.js';
-import {interfaceMain} from 'index.js';
+import { voltar, totalCheckout, abrirPainelRevendas, abrirMeuPerfil } from "index.js";
+import { mUser, mUid } from 'index.js';
+import { interfaceMain } from 'index.js';
 import Pb from 'views/my/Pb';
-import { getFirestore } from 'firebase/firestore';
-import { FacebookAuthProvider, GoogleAuthProvider, getAuth } from 'firebase/auth';
+import { collection, doc, getDoc, getDocs, getFirestore, query, updateDoc, where, writeBatch } from 'firebase/firestore';
+import { FacebookAuthProvider, GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth';
+import { initializeApp } from 'firebase/app';
 
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAtMQ-oTpBa3YNeLf8DTRYdKWDQxMXFuvE",
+  authDomain: "venda-favorita.firebaseapp.com",
+  databaseURL: "https://venda-favorita.firebaseio.com",
+  projectId: "venda-favorita",
+  storageBucket: "venda-favorita.appspot.com",
+  messagingSenderId: "978500802251",
+  appId: "1:978500802251:web:1aad0e093739f59969ed4e",
+  measurementId: "G-EK2ZQP9BKK"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const useStyles = makeStyles(theme => ({
   appBar: {
@@ -156,7 +170,7 @@ let verificarDados = () => {
   } else if (mContato === '') {
     alert('Insira seu contato');
     return false;
-  } 
+  }
 
   return true;
 }
@@ -194,12 +208,12 @@ const finalDescricao = ['Aguarde um pouco, estamos Confirmando sua venda, é rá
 let mApelido = '';
 let mContato = '';
 
-function setMeuApelido (valor) {
-    mApelido = valor.target.value;
+function setMeuApelido(valor) {
+  mApelido = valor.target.value;
 }
 
-function setContato (valor) {
-    mContato = valor.target.value;
+function setContato(valor) {
+  mContato = valor.target.value;
 }
 
 class Conclusao extends React.Component {
@@ -225,18 +239,15 @@ class Conclusao extends React.Component {
     this.salvarDados = this.salvarDados.bind(this);
 
     //colocar pra analisar o apelido e iniciar o processo de cadastro
-   
+
   }
 
   verificarApelido() {
 
     let meuApelido = mApelido;
 
-    getFirestore()
-      .collection("Usuario")
-      .where("userName", "==", mApelido)
-      .get()
-      .then(querySnapshot => {
+    const q = query(collection(db, 'Usuario'), where("userName", "==", mApelido));
+    getDocs(q).then(querySnapshot => {
 
         console.log(querySnapshot);
 
@@ -276,27 +287,27 @@ class Conclusao extends React.Component {
 
   salvarDados() {
 
-    let {user} = this.state;
+    let { user } = this.state;
 
     let documentoPrincipalUsuario = {
-        userName: mApelido.toLowerCase(),
-        nome: user.displayName,
-        email: user.email,
-        celular: mContato,
-        controleDeVersao: 2,
-        uid: user.uid,
-        pathFoto: user.photoURL,
-        tipoDeUsuario: 2,
-        provedor: 'Site',
-        ultimoLogin: Date.now(),
-        primeiroLogin: Date.now(),
-        tokenFcm: '',
-        endereco: null,
-        uidAdm: '',
-        usernameAdm: '',
-        nomeAdm: '',
-        pathFotoAdm: '',
-        admConfirmado: false
+      userName: mApelido.toLowerCase(),
+      nome: user.displayName,
+      email: user.email,
+      celular: mContato,
+      controleDeVersao: 2,
+      uid: user.uid,
+      pathFoto: user.photoURL,
+      tipoDeUsuario: 2,
+      provedor: 'Site',
+      ultimoLogin: Date.now(),
+      primeiroLogin: Date.now(),
+      tokenFcm: '',
+      endereco: null,
+      uidAdm: '',
+      usernameAdm: '',
+      nomeAdm: '',
+      pathFotoAdm: '',
+      admConfirmado: false
     };
 
     let obj = {
@@ -310,12 +321,10 @@ class Conclusao extends React.Component {
       timestamp: Date.now()
     };
 
-    const db = getFirestore();
-    db.settings({timestampsInSnapshots: true});
-    let batch = db.batch();
+    const batch = writeBatch(db);
 
-    let userRef = db.collection("Usuario").doc(user.uid);
-    let revRef = db.collection('Revendedores').doc('amacompras').collection('ativos').doc(user.uid);
+    let userRef = doc(db, "Usuario", user.uid);
+    let revRef = doc(db, 'Revendedores', 'amacompras', 'ativos', user.uid);
 
     batch.set(userRef, documentoPrincipalUsuario);
     batch.set(revRef, obj);
@@ -340,32 +349,32 @@ class Conclusao extends React.Component {
 
     if (mApelido.length === 0) {
 
-        alert('Insira seu apelido');
-        return;
+      alert('Insira seu apelido');
+      return;
 
     }
 
     if (mContato.length < 8) {
-        alert('Insira todos os digitos do seu número');
-        return;
+      alert('Insira todos os digitos do seu número');
+      return;
     }
 
     let apelidoFormatado = '';
 
-    for(let i = 0; i < mApelido.length; i++) {
-        let char = mApelido[i];
+    for (let i = 0; i < mApelido.length; i++) {
+      let char = mApelido[i];
 
-        if (char === ' ') {
-           char = '_';
-        }
+      if (char === ' ') {
+        char = '_';
+      }
 
-        apelidoFormatado = apelidoFormatado + char;
+      apelidoFormatado = apelidoFormatado + char;
 
     }
 
     mApelido = apelidoFormatado.toLowerCase();
 
-    
+
 
     console.log(mContato);
     console.log(mApelido);
@@ -379,158 +388,153 @@ class Conclusao extends React.Component {
   }
 
   loginFace() {
-      var provider = new FacebookAuthProvider();
-      getAuth().languageCode = 'pt';
-      getAuth().signInWithPopup(provider).then(result => {
-        let user = result.user;
-        this.setState({
-            //usuario ta logado
-            activeStep: 1,
-            user: user,
-            pb: true
-          });
-        this.carregarUsuario(user);
-      }).catch(error => {
-
+    var provider = new FacebookAuthProvider();
+    getAuth().languageCode = 'pt';
+    getAuth().signInWithPopup(provider).then(result => {
+      let user = result.user;
+      this.setState({
+        //usuario ta logado
+        activeStep: 1,
+        user: user,
+        pb: true
       });
+      this.carregarUsuario(user);
+    }).catch(error => {
+
+    });
   }
 
   loginGoogle() {
-      let providerGoogle = new GoogleAuthProvider();
-      getAuth().languageCode = 'pt';
-      getAuth().signInWithPopup(providerGoogle).then(result => {
-        let user = result.user;
-        this.setState({
-            //usuario ta logado
-            activeStep: 1,
-            user: user,
-            pb: true
-          });
-        this.carregarUsuario(user);
-      }).catch(error => {
-
+    let providerGoogle = new GoogleAuthProvider();
+    getAuth().languageCode = 'pt';
+    signInWithPopup(getAuth(), providerGoogle).then(result => {
+      let user = result.user;
+      this.setState({
+        //usuario ta logado
+        activeStep: 1,
+        user: user,
+        pb: true
       });
+      this.carregarUsuario(user);
+    }).catch(error => {
+
+    });
   }
 
   carregarDadosAdm() {
 
-      let urlParams = new URLSearchParams(window.location.search);
+    let urlParams = new URLSearchParams(window.location.search);
 
-      if (urlParams.has('adm')) {
+    if (urlParams.has('adm')) {
 
-          let adm = urlParams.get('adm');
+      let adm = urlParams.get('adm');
 
-          console.log(adm);
+      console.log(adm);
 
-          getFirestore()
-            .collection("Usuario")
-            .where("userName", "==", adm)
-            .get()
-            .then(querySnapshot => {
-                if (querySnapshot === null || querySnapshot === undefined) {
-                  // apelino nao existe
-                  abrirPainelRevendas();
+      const q = query(collection(db, 'Usuario'), where("userName", "==", adm));
 
-                } else {
+      getDocs(q).then(querySnapshot => {
+        if (querySnapshot === null || querySnapshot === undefined) {
+          // apelino nao existe
+          abrirPainelRevendas();
 
-                    console.log(querySnapshot[0]);
-                    console.log(querySnapshot.docs[0]);
+        } else {
 
-                    if (querySnapshot.size > 0) {
+          console.log(querySnapshot[0]);
+          console.log(querySnapshot.docs[0]);
+
+          if (querySnapshot.size > 0) {
 
 
 
-                      this.setState({
-                        loading: false,
-                        adm: querySnapshot.docs[0],
-                        activeStep: 2
-                      });
-                      
-
-                    } else {
-
-                      abrirPainelRevendas();
-                    }
-                }
+            this.setState({
+              loading: false,
+              adm: querySnapshot.docs[0],
+              activeStep: 2
             });
 
-      } else {
-        abrirPainelRevendas();
-      }
+
+          } else {
+
+            abrirPainelRevendas();
+          }
+        }
+      });
+
+    } else {
+      abrirPainelRevendas();
+    }
 
   }
 
   carregarUsuario(usr) {
 
-      if (usr.isAnonymous) {
+    if (usr.isAnonymous) {
+
+      this.setState({
+        //container login
+        //usuario nao ta logado
+        activeStep: 0,
+        user: usr,
+        pb: false
+      });
+
+      return;
+    }
+
+    const refDocUsuario = doc(db, 'Usuario', usr.uid);
+    getDoc(refDocUsuario).then(doc => {
+
+        if (doc !== null || doc !== undefined) {
+
+          if (doc.get('userName') === null || doc.get('userName') === undefined || doc.get('userName') === '') {
+
+            this.setState({
+              //container formulario
+              //usuario ta logado, mas nao tem cadastro
+              activeStep: 1,
+              usuario: doc,
+              user: usr,
+              pb: false
+            });
+
+            //this.carregarDadosAdm();
+
+            return;
+
+          } else {
+
+            this.setState({
+              //container solicitacao adm
+              //usuario ta logado, ja ta castrado mas não tem adm
+              activeStep: 2,
+              usuario: doc,
+              user: usr,
+              pb: false
+            });
+
+            this.carregarDadosAdm();
+
+            return;
+
+          }
+
+        } else {
 
           this.setState({
-            //container login
-            //usuario nao ta logado
-            activeStep: 0,
-            user: usr,
-            pb: false
+            //container formulario
+            //usuario ta logado, mas nao tem cadastro
+            activeStep: 1,
+            pb: false,
+            user: usr
           });
 
+          //this.carregarDadosAdm();
+
           return;
-      }
 
-      getFirestore()
-        .collection("Usuario")
-        .doc(usr.uid)
-        .get()
-        .then(doc => {
-
-            if (doc !== null || doc !== undefined) {
-
-               if (doc.get('userName') === null || doc.get('userName') === undefined || doc.get('userName') === '') {
-
-                  this.setState({
-                    //container formulario
-                    //usuario ta logado, mas nao tem cadastro
-                    activeStep: 1,
-                    usuario: doc,
-                    user: usr,
-                    pb: false
-                  });
-
-                  //this.carregarDadosAdm();
-
-                  return;
-
-               } else {
-
-                  this.setState({
-                    //container solicitacao adm
-                    //usuario ta logado, ja ta castrado mas não tem adm
-                    activeStep: 2,
-                    usuario: doc,
-                    user: usr,
-                    pb: false
-                  });
-
-                  this.carregarDadosAdm();
-
-                  return;
-
-               }
-
-            } else {
-
-              this.setState({
-                //container formulario
-                //usuario ta logado, mas nao tem cadastro
-                activeStep: 1,
-                pb: false,
-                user: usr
-              });
-
-              //this.carregarDadosAdm();
-
-              return;
-
-            }
-        });
+        }
+      });
   }
 
 
@@ -540,7 +544,7 @@ class Conclusao extends React.Component {
       getAuth().onAuthStateChanged(user => {
         if (user) {
           // User is signed in.
-          
+
           this.carregarUsuario(user);
 
         }
@@ -548,192 +552,188 @@ class Conclusao extends React.Component {
     } else {
       this.carregarUsuario(mUser);
     }
-    
+
 
   }
 
   aceitar() {
 
-      this.setState({loading: true});
+    this.setState({ loading: true });
 
-      let ref = getFirestore().collection("Usuario").doc(this.state.user.uid);
+    const ref = db.collection("Usuario").doc(this.state.user.uid);
 
-      ref.update({
-        admConfirmado: true,
-        uidAdm: this.state.adm.get('uid'),
-        usernameAdm: this.state.adm.get('userName'),
-        nomeAdm: this.state.adm.get('nome'),
-        pathFotoAdm: this.state.adm.get('pathFoto')
-      }).then(() => {
-          abrirMeuPerfil();
-      });
+    updateDoc(ref, {
+      admConfirmado: true,
+      uidAdm: this.state.adm.get('uid'),
+      usernameAdm: this.state.adm.get('userName'),
+      nomeAdm: this.state.adm.get('nome'),
+      pathFotoAdm: this.state.adm.get('pathFoto')
+    }).then(() => {
+      abrirMeuPerfil();
+    });
 
   }
 
   recusar() {
-    
+
     abrirPainelRevendas();
 
   }
 
   render() {
 
-    let {classes} = this.props;
-    
-    let {usuario, pb, activeStep} = this.state;
+    let { classes } = this.props;
 
-    
+    let { usuario, pb, activeStep } = this.state;
+
+
 
     let containerLogin = (
 
-        <CardBody>
+      <CardBody>
 
-            <h3 className={classes.textCenter}>Seus dados estão seguros</h3>
+        <h3 className={classes.textCenter}>Seus dados estão seguros</h3>
 
-            <h5 className={classes.textCenter}>Faça a Autenticação para poder revender nossos produtos. Pedimos sua identificação atraves das redes sociais para manter um relacionamento mais seguro. So teremos acesso a dados públicos como: e-mail, nome, foto do perfil...</h5>
+        <h5 className={classes.textCenter}>Faça a Autenticação para poder revender nossos produtos. Pedimos sua identificação atraves das redes sociais para manter um relacionamento mais seguro. So teremos acesso a dados públicos como: e-mail, nome, foto do perfil...</h5>
 
-            <h3 className={classes.textCenter}> <strong>Escolha uma forma de Login</strong></h3>
+        <h3 className={classes.textCenter}> <strong>FAÇA SUA AUTENTICAÇÃO</strong></h3>
 
-            <div className={classes.textCenter}>
+        <div className={classes.textCenter}>
 
-                          <Button onClick={() => {
-                            this.loginGoogle();
-                          }} style={{
-                            marginRight: '16px',
-                          }} round justIcon color="google">
-                            <i className="fab fa-google" />
-                          </Button>
-                          
-                          <Button onClick={() => {
-                            this.loginFace();
-                          }} round justIcon color="facebook">
-                            <i className="fab fa-facebook" />
-                          </Button>
-            </div>
-                    
-        </CardBody>
+          <Button onClick={() => this.loginGoogle()} round color="google">
+            <i className="fab fa-google" />
+            <Typography style={{ paddingLeft: 10 }}>
+              Com Google
+            </Typography>
+
+          </Button>
+
+
+        </div>
+
+      </CardBody>
 
     );
 
 
     let containerFormulario = (
 
-       <form className={classes.form}>
+      <form className={classes.form}>
 
-                            <h3 className={classes.textCenter}>Insira seus dados abaixo</h3>
+        <h3 className={classes.textCenter}>Insira seus dados abaixo</h3>
 
-                            <h5 className={classes.textCenter}>Crie um apelido unico e exclusivamente seu. Assim você será reconhecido na Amacompras ! E lembre-se de insiri um número pra contato</h5>
+        <h5 className={classes.textCenter}>Crie um apelido unico e exclusivamente seu. Assim você será reconhecido na Amacompras ! E lembre-se de insiri um número pra contato</h5>
 
 
-                            <CustomInput
-                              formControlProps={{
-                                fullWidth: true,
-                                className: classes.customFormControlClasses
-                              }}
-                              inputProps={{
-                                startAdornment: (
-                                  <InputAdornment
-                                    position="start"
-                                    className={classes.inputAdornment}
-                                  >
-                                    <Face className={classes.inputAdornmentIcon} />
-                                  </InputAdornment>
-                                ),
-                                placeholder: "Apelido...",
-                                onChange: setMeuApelido
-                              }}
-                            />
-                            <CustomInput
-                              formControlProps={{
-                                fullWidth: true,
-                                className: classes.customFormControlClasses
-                              }}
-                              inputProps={{
-                                startAdornment: (
-                                  <InputAdornment
-                                    position="start"
-                                    className={classes.inputAdornment}
-                                  >
-                                    <ContactPhoneIcon className={classes.inputAdornmentIcon} />
-                                  </InputAdornment>
-                                ),
-                                placeholder: "Telefone ou Whatsapp...",
-                                onChange: setContato
-                              }}
-                            />
+        <CustomInput
+          formControlProps={{
+            fullWidth: true,
+            className: classes.customFormControlClasses
+          }}
+          inputProps={{
+            startAdornment: (
+              <InputAdornment
+                position="start"
+                className={classes.inputAdornment}
+              >
+                <Face className={classes.inputAdornmentIcon} />
+              </InputAdornment>
+            ),
+            placeholder: "Apelido...",
+            onChange: setMeuApelido
+          }}
+        />
+        <CustomInput
+          formControlProps={{
+            fullWidth: true,
+            className: classes.customFormControlClasses
+          }}
+          inputProps={{
+            startAdornment: (
+              <InputAdornment
+                position="start"
+                className={classes.inputAdornment}
+              >
+                <ContactPhoneIcon className={classes.inputAdornmentIcon} />
+              </InputAdornment>
+            ),
+            placeholder: "Telefone ou Whatsapp...",
+            onChange: setContato
+          }}
+        />
 
-                            <div 
-                                style={{
-                                    marginTop: '50px'
-                                }} 
-                                className={classes.textCenter}>
-                            <Button onClick={this.analizar} round color="verde">
-                                Continuar
-                            </Button>
-                            </div>
-                           
-       </form>
+        <div
+          style={{
+            marginTop: '50px'
+          }}
+          className={classes.textCenter}>
+          <Button onClick={this.analizar} round color="verde">
+            Continuar
+          </Button>
+        </div>
+
+      </form>
 
     );
 
     let containerSolicitacao = null;
 
     if (this.state.adm !== null && this.state.adm !== undefined) {
-        containerSolicitacao = (
+      containerSolicitacao = (
 
-          <Media
-                key={Math.random() * Date.now()}
-                avatar={this.state.adm.get('pathFoto')}
-                style={{margin: '30px'}}
-                title={
-                  <span>
-                    @{this.state.adm.get('userName')} deseja se tornar seu ADM
-                  </span>
-                }
-                body={
-                  <span>
-                    <p>
-                      Aceite para que ele ganhe comissões a cada venda que você fizer... Aproveite e convide novas pessoas tambem !
-                    </p>
-                  </span>
-                }
-                footer={
-                  <div>
-                    <Tooltip
-                      id="tooltip-tina2"
-                      title="Reply to comment"
-                      placement="top"
-                      classes={{ tooltip: classes.tooltip }}
-                    >
-                      <Button
-                        onClick={() => (this.aceitar())}
-                        color="danger"
-                        simple
-                        className={classes.floatRight}
-                      >
-                         Aceitar
-                      </Button>
-                    </Tooltip>
-                    <Button
-                      onClick={() => (this.recusar())}
-                      simple
-                      color="primary"
-                      className={classes.floatRight}
-                    >
-                       Recusar
-                    </Button>
-                  </div>
-                }
-              />
+        <Media
+          key={Math.random() * Date.now()}
+          avatar={this.state.adm.get('pathFoto')}
+          style={{ margin: '30px' }}
+          title={
+            <span>
+              @{this.state.adm.get('userName')} deseja se tornar seu ADM
+            </span>
+          }
+          body={
+            <span>
+              <p>
+                Aceite para que ele ganhe comissões a cada venda que você fizer... Aproveite e convide novas pessoas tambem !
+              </p>
+            </span>
+          }
+          footer={
+            <div>
+              <Tooltip
+                id="tooltip-tina2"
+                title="Reply to comment"
+                placement="top"
+                classes={{ tooltip: classes.tooltip }}
+              >
+                <Button
+                  onClick={() => (this.aceitar())}
+                  color="danger"
+                  simple
+                  className={classes.floatRight}
+                >
+                  Aceitar
+                </Button>
+              </Tooltip>
+              <Button
+                onClick={() => (this.recusar())}
+                simple
+                color="primary"
+                className={classes.floatRight}
+              >
+                Recusar
+              </Button>
+            </div>
+          }
+        />
 
-        );
+      );
     }
 
 
 
     let containerMain = null;
 
-    switch(activeStep) {
+    switch (activeStep) {
 
       default:
 
@@ -758,8 +758,8 @@ class Conclusao extends React.Component {
 
       <React.Fragment>
         <CssBaseline />
-        
-      
+
+
 
         <main className={classes.layout}>
           <Paper className={classes.paper}>
@@ -767,11 +767,11 @@ class Conclusao extends React.Component {
               Cadastro
             </Typography>
             <Stepper activeStep={activeStep} connector={<QontoConnector />} className={classes.stepper}>
-                    {steps.map(label => (
-                      <Step key={label}>
-                        <StepLabel StepIconComponent={QontoStepIcon}>{label}</StepLabel>
-                      </Step>
-                    ))}
+              {steps.map(label => (
+                <Step key={label}>
+                  <StepLabel StepIconComponent={QontoStepIcon}>{label}</StepLabel>
+                </Step>
+              ))}
             </Stepper>
             <React.Fragment>
               {pb === true ? (
@@ -795,14 +795,14 @@ class Conclusao extends React.Component {
 }
 
 export default function Cadastro(props) {
-  
+
   const classes = useStyles();
 
-  return(
+  return (
 
     <Conclusao classes={classes} />
 
   );
 
-  
+
 }

@@ -49,7 +49,21 @@ import {mFirebase, abrirFormulario, mUser, mUid, mApelido, mPathFoto, mCelular, 
 
 import profilePageStyle from "assets/jss/material-kit-pro-react/views/profilePageStyle.js";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { doc, getDoc, getFirestore } from "firebase/firestore";
+import { initializeApp } from "firebase/app";
+
+const firebaseConfig = {
+	apiKey: "AIzaSyAtMQ-oTpBa3YNeLf8DTRYdKWDQxMXFuvE",
+	authDomain: "venda-favorita.firebaseapp.com",
+	databaseURL: "https://venda-favorita.firebaseio.com",
+	projectId: "venda-favorita",
+	storageBucket: "venda-favorita.appspot.com",
+	messagingSenderId: "978500802251",
+	appId: "1:978500802251:web:1aad0e093739f59969ed4e",
+	measurementId: "G-EK2ZQP9BKK"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const useStyles = makeStyles(profilePageStyle);
 
@@ -81,11 +95,8 @@ class MeuPerfil extends React.Component {
 
   verificarRegistro(usr) {
 
-      getFirestore()
-        .collection("Usuario")
-        .doc(usr.uid)
-        .get()
-        .then(doc => {
+      const refDoc = doc(db, "Usuario", usr.uid);
+      getDoc(refDoc).then(doc => {
           if (doc !== null || doc !== undefined) {
 
 

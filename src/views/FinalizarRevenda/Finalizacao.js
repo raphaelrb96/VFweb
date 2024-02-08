@@ -357,7 +357,7 @@ const getDocObjPedido = (list, document, usuario, id) => {
 
 const getDocObjComissaoAfiliado = (objtFim, usuario) => {
 
-  const tituloDaComissao = usuario?.vipDiamanete ? 'Bônus Diamanete' : 'Venda de ' + objtFim.userNomeRevendedor;
+  const tituloDaComissao = usuario?.vipDiamante ? 'Bônus Diamanete' : 'Venda de ' + objtFim.userNomeRevendedor;
   const descricaoOficial = objtFim.listaDeProdutos[0].quantidade + ' ' + objtFim.listaDeProdutos[0].produtoName;
 
   const objComissaoAfiliados = {

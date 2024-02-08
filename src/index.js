@@ -32,7 +32,7 @@ import ActivityMain from "views/NovaInterface/ActivityMain.js";
 
 import { initializeApp } from "firebase/app";
 import { collection, deleteDoc, doc, getFirestore, onSnapshot, setDoc, writeBatch } from "firebase/firestore";
-import { FacebookAuthProvider, GoogleAuthProvider, getAuth } from "firebase/auth";
+import { FacebookAuthProvider, GoogleAuthProvider, getAuth, signInAnonymously } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
 export let listaProdutosPrincipal = Array();
@@ -271,7 +271,7 @@ export function addToCart(documento, idProd) {
 }
 
 let loginAnonimo = () => {
-  getAuth().signInAnonymously().catch(error => {
+  signInAnonymously(getAuth()).catch(error => {
     // Handle Errors here.
     var errorCode = error.code;
     var errorMessage = error.message;
@@ -532,7 +532,6 @@ ReactDOM.render(
       <Route path="/comprar-agora" component={withRouter(ComprarAgora)} />
       <Route path="/revenda" component={withRouter(CarrinhoRevendas)} />
       <Route path="/finalizar-venda" component={withRouter(Finalizacao)} />
-      <Route path="/login" component={withRouter(LoginPage)} />
       <Route path="/" component={withRouter(ActivityMain)} />
     </Switch>
   </Router>,

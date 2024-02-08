@@ -73,7 +73,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const useStyles2 = makeStyles(theme => ({
+const useStyles = makeStyles(theme => ({
+	...pricingStyle,
 	depositContext: {
 		flex: 1,
 		alignItems: 'flex-end',
@@ -83,10 +84,6 @@ const useStyles2 = makeStyles(theme => ({
 	btIndisp: {
 		color: "gray",
 	},
-}));
-
-const useStyles = makeStyles(theme => ({
-	...pricingStyle,
 }));
 
 const getStatus = (s) => {
@@ -143,12 +140,12 @@ const getComissoes = async (uid) => {
 		const item = prods[i];
 		const data = item.data();
 
-		if (item.statusCompra === 5) {
+		if (data.statusCompra === 5) {
 
 
-			if (item.pagamentoRecebido === false) {
+			if (data.pagamentoRecebido === false) {
 
-				let precoTT = item.comissaoTotal;
+				let precoTT = data.comissaoTotal;
 				total = total + precoTT;
 
 			}
@@ -173,6 +170,7 @@ const getBonus = async (uid) => {
 
 	const tamanho = querySnapshot.size;
 
+
 	let list = [];
 	let total = 0;
 
@@ -180,12 +178,18 @@ const getBonus = async (uid) => {
 		const item = qDocs[i];
 		const data = item.data();
 
-		if (item.statusComissao === 5) {
 
-			if (item.pagamentoRecebido === false) {
+		console.log(data.statusComissao);
+		console.log(data.pagamentoRecebido);
 
-				let precoTT = item.comissao;
+
+		if (data.statusComissao === 5) {
+
+			if (data.pagamentoRecebido === false) {
+
+				let precoTT = data.comissao;
 				total = total + precoTT;
+
 
 			}
 
@@ -208,7 +212,6 @@ function Title(props) {
 };
 
 function FinancaComissoes(props) {
-	const classes = useStyles2();
 
 
 	return (
@@ -217,10 +220,10 @@ function FinancaComissoes(props) {
 			<Typography component="p" variant="h4">
 				R${props.total},00
 			</Typography>
-			<Typography color="textSecondary" className={classes.depositContext}>
+			<Typography color="textSecondary" className={props.classes.depositContext}>
 				{props.texto}
 			</Typography>
-			
+
 		</React.Fragment>
 	);
 };
@@ -244,8 +247,9 @@ class ItemComissaoVenda extends React.Component {
 			<GridItem style={{
 				marginRight: '0px',
 				marginLeft: '0px'
-			}} md={3} sm={3}>
-				<Card raised pricing>
+			}} xs={12} lg={4} sm={6}>
+		
+				<Card style={{borderRadius: 16}} pricing>
 					<CardBody pricing>
 						<h6
 						>
@@ -299,8 +303,8 @@ class ItemComissaoAfiliados extends React.Component {
 			<GridItem style={{
 				marginRight: '0px',
 				marginLeft: '0px'
-			}} xs={12} md={4} sm={3}>
-				<Card raised pricing>
+			}} xs={12} lg={4} sm={6}>
+				<Card style={{borderRadius: 16}} pricing>
 					<CardBody pricing>
 						<h6
 						>
@@ -372,20 +376,32 @@ function ContentMain({ classes, state }) {
 				<Grid container spacing={3}>
 
 					<Grid item xs={12} md={4} lg={4}>
-						<Card raised style={{ height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff' }}>
-							<FinancaComissoes title="Total à receber" total={state.totalAReceber} texto="Tudo que você tem a receber juntando vendas e afiliados" />
+						<Card style={{ height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff', borderRadius: 16 }}>
+							<FinancaComissoes
+								title="Total à receber"
+								total={state.totalAReceber}
+								classes={classes}
+								texto="Total disponivel a receber somando suas vendas e recompensas" />
 						</Card>
 					</Grid>
 
 					<Grid item xs={12} md={4} lg={4}>
-						<Card raised style={{ height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff' }}>
-							<FinancaComissoes title="Revendas" total={state.totalComissoesVendas} texto="Esse é o valor da sua comissão pelas revendas que você gerou na VendaFavorita" />
+						<Card style={{ height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff', borderRadius: 16  }}>
+							<FinancaComissoes
+								title="Revendas"
+								total={state.totalComissoesVendas}
+								classes={classes}
+								texto="Esse é o valor do seu lucro pelas revendas que você gerou na Venda Favorita" />
 						</Card>
 					</Grid>
 
 					<Grid item xs={12} md={4} lg={4}>
-						<Card raised style={{ height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff' }}>
-							<FinancaComissoes title="Afiliados" total={state.totalComissoesAfilidados} texto="Esse é o valor da sua comissão gerada pela sua rede de afiliados" />
+						<Card style={{ height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff', borderRadius: 16  }}>
+							<FinancaComissoes
+								title="Recompensas"
+								total={state.totalComissoesAfilidados}
+								classes={classes}
+								texto="Esse é o valor das suas recompensas por indicação e bônus Diamante" />
 						</Card>
 					</Grid>
 
@@ -460,10 +476,13 @@ export default function Comissoes(props) {
 					const resultComissoes = await getComissoes(usr.uid);
 					const listComissoes = resultComissoes ? resultComissoes.list : [];
 					const totalComissoes = resultComissoes ? resultComissoes.total : 0;
+					console.log(totalComissoes);
 
 					const resultBonus = await getBonus(usr.uid);
 					const listBonus = resultBonus ? resultBonus.list : [];
 					const totalBonus = resultBonus ? resultBonus.total : 0;
+					console.log(totalBonus);
+
 
 					setState((prevState) => ({
 						...prevState,
@@ -483,6 +502,9 @@ export default function Comissoes(props) {
 
 		});
 	}, []);
+
+	console.log(state);
+
 
 
 	return <ContentMain classes={classes} state={state} />;
