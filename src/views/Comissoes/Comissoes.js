@@ -59,6 +59,7 @@ import { collection, doc, getDoc, getDocs, getFirestore, limit, orderBy, query, 
 import { getAuth } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import { interfaceMain } from "index";
+import { SubHead } from "views/ProductPage/SubHead";
 
 const firebaseConfig = {
 	apiKey: "AIzaSyAtMQ-oTpBa3YNeLf8DTRYdKWDQxMXFuvE",
@@ -83,6 +84,12 @@ const useStyles = makeStyles(theme => ({
 
 	btIndisp: {
 		color: "gray",
+	},
+	valor: {
+		fontFamily: `"Roboto Slab", "Times New Roman", serif`,
+		color: '#060D51',
+		fontWeight: "bold",
+		marginBottom: '16px'
 	},
 }));
 
@@ -203,11 +210,11 @@ const getBonus = async (uid) => {
 
 function Title(props) {
 	return (
-		<h3 style={{ color: '#060D51' }} >
+		<Typography variant="h6" style={{ color: '#060D51' }} >
 			<b>
 				{props.children}
 			</b>
-		</h3>
+		</Typography>
 	);
 };
 
@@ -215,16 +222,17 @@ function FinancaComissoes(props) {
 
 
 	return (
-		<React.Fragment>
+		<Card style={{ minHeight: 240, padding: '20px', marginTop: 20, display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff', borderRadius: 16 }}>
+
 			<Title>{props.title}</Title>
-			<Typography component="p" variant="h4">
+			<Typography className={props.classes.valor} variant="h4">
 				R${props.total},00
 			</Typography>
 			<Typography color="textSecondary" className={props.classes.depositContext}>
 				{props.texto}
 			</Typography>
 
-		</React.Fragment>
+		</Card>
 	);
 };
 
@@ -248,8 +256,8 @@ class ItemComissaoVenda extends React.Component {
 				marginRight: '0px',
 				marginLeft: '0px'
 			}} xs={12} lg={4} sm={6}>
-		
-				<Card style={{borderRadius: 16}} pricing>
+
+				<Card style={{ borderRadius: 16 }} pricing>
 					<CardBody pricing>
 						<h6
 						>
@@ -304,7 +312,7 @@ class ItemComissaoAfiliados extends React.Component {
 				marginRight: '0px',
 				marginLeft: '0px'
 			}} xs={12} lg={4} sm={6}>
-				<Card style={{borderRadius: 16}} pricing>
+				<Card style={{ borderRadius: 16 }} pricing>
 					<CardBody pricing>
 						<h6
 						>
@@ -366,6 +374,8 @@ function ContentMain({ classes, state }) {
 
 	);
 
+	if(state.pb) return <Pb />;
+
 
 	return (
 
@@ -376,63 +386,61 @@ function ContentMain({ classes, state }) {
 				<Grid container spacing={3}>
 
 					<Grid item xs={12} md={4} lg={4}>
-						<Card style={{ height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff', borderRadius: 16 }}>
-							<FinancaComissoes
-								title="Total à receber"
-								total={state.totalAReceber}
-								classes={classes}
-								texto="Total disponivel a receber somando suas vendas e recompensas" />
-						</Card>
+						<FinancaComissoes
+							title="Total à receber"
+							total={state.totalAReceber}
+							classes={classes}
+							texto="Total disponivel a receber somando suas vendas e recompensas" />
 					</Grid>
 
 					<Grid item xs={12} md={4} lg={4}>
-						<Card style={{ height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff', borderRadius: 16  }}>
-							<FinancaComissoes
-								title="Revendas"
-								total={state.totalComissoesVendas}
-								classes={classes}
-								texto="Esse é o valor do seu lucro pelas revendas que você gerou na Venda Favorita" />
-						</Card>
+						<FinancaComissoes
+							title="Revendas"
+							total={state.totalComissoesVendas}
+							classes={classes}
+							texto="Esse é o valor do seu lucro pelas revendas que você gerou na Venda Favorita" />
 					</Grid>
 
 					<Grid item xs={12} md={4} lg={4}>
-						<Card style={{ height: 280, padding: '20px', display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff', borderRadius: 16  }}>
-							<FinancaComissoes
-								title="Recompensas"
-								total={state.totalComissoesAfilidados}
-								classes={classes}
-								texto="Esse é o valor das suas recompensas por indicação e bônus Diamante" />
-						</Card>
+						<FinancaComissoes
+							title="Recompensas"
+							total={state.totalComissoesAfilidados}
+							classes={classes}
+							texto="Esse é o valor das suas recompensas por indicação e bônus Diamante" />
 					</Grid>
 
 				</Grid>
 			</Container>
 
-			<div style={{ marginTop: "20px" }} >
-				<div className={classes.pricingSection}>
+			<Container style={{ marginTop: "20px" }} >
+				<SubHead
+					center
+					title="Historico de Comissões em Revendas"
+				/>
+				<GridContainer container>
 
-					<h3 style={{ marginTop: "20px", marginBottom: "40px" }} className={classNames(classes.features, classes.textCenter, classes.cardTitle)}>Comissões de Revendas</h3>
+					{listComissoesVendas}
 
-					<GridContainer style={{ marginRight: "15px", marginLeft: "15px" }}>
+				</GridContainer>
 
-						{listComissoesVendas}
 
-					</GridContainer>
-				</div>
-			</div>
+			</Container>
 
-			<div style={{ marginTop: "20px" }} >
-				<div className={classes.pricingSection}>
+			<Container style={{ marginTop: "20px" }} >
 
-					<h3 style={{ marginTop: "20px", marginBottom: "40px" }} className={classNames(classes.features, classes.textCenter, classes.cardTitle)}>Comissões de Afiliados</h3>
+				<SubHead
+					center
+					title="Historico de Recompensas e Bônus de indicações"
+				/>
 
-					<GridContainer style={{ marginRight: "15px", marginLeft: "15px" }}>
+				<GridContainer container>
 
-						{listComissoesAfiliados}
+					{listComissoesAfiliados}
 
-					</GridContainer>
-				</div>
-			</div>
+				</GridContainer>
+
+
+			</Container>
 
 		</div>
 

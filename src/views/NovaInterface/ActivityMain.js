@@ -18,6 +18,7 @@ import Comissoes from "views/Comissoes/Comissoes.js";
 import MeusAfiliados from "views/Afiliados/MeusAfiliados.js";
 import { grayColor } from 'assets/jss/material-kit-pro-react';
 import CarrinhoRevendas from 'views/Revendas/CarrinhoRevendas';
+import Carteira from 'views/Carteira/Carteira';
 
 //import { abriCategoria, verMinhasComissoes } from 'index.js';
 
@@ -206,11 +207,13 @@ function Paperbase(props) {
       case 3:
         return 'Detalhes do Produto';
       case 4:
-        return 'Carteira';
+        return 'Comissões';
       case 5:
         return 'Afiliados';
       case 6:
         return 'Novo Pedido';
+      case 7:
+        return 'Carteira';
     }
   };
 
@@ -257,6 +260,13 @@ function Paperbase(props) {
     }
 
 
+  } else if (window.location.toString().includes('carteira')) {
+
+    if (tela !== 7) {
+      setTela(7);
+    }
+
+
   } else {
     if (tela !== 1) {
       setTela(1);
@@ -284,6 +294,9 @@ function Paperbase(props) {
       break;
     case 6:
       component = <CarrinhoRevendas />;
+      break;
+    case 7:
+      component = <Carteira />;
       break;
   }
 

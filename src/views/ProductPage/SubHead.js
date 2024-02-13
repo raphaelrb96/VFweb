@@ -18,17 +18,22 @@ const useStyles = makeStyles(theme => ({
     },
     title: {
         width: '100%',
+    },
+    center: {
+        textAlign: 'center'
     }
 }));
 
-export const SubHead = ({ title, subTitle }) => {
+export const SubHead = ({ title, subTitle, center }) => {
 
     const classes = useStyles();
+
+    const titleStyle = center ? [classes.title, classes.center] : classes.title;
 
     return (
         <Grid container item xs={12} justifyContent="center" className={classes.head} sx={{ textAlign: "center" }}>
 
-            <Typography className={classes.title} variant="h6" color="text">
+            <Typography className={titleStyle} variant="h6" color="text">
                 {title}
             </Typography>
 

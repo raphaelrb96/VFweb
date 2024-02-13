@@ -13,7 +13,7 @@ const centro = {
   display: 'block',
   marginLeft: 'auto',
   marginRight: 'auto',
-  marginTop: '80px',
+  marginTop: '120px',
   marginBottom: '200px',
 }
 

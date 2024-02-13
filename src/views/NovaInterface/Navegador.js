@@ -21,12 +21,14 @@ import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
 import ShoppingCart from "@material-ui/icons/ShoppingCart";
 import MonetizationOnIcon from '@material-ui/icons/MonetizationOn';
 import GroupAddIcon from '@material-ui/icons/GroupAdd';
+import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 
 import { abrirPainelRevendas, homepage, abrirListaRevenda, verMinhasComissoes, verMeusAfiliados } from 'index.js';
 import CardAvatar from 'components/Card/CardAvatar';
 import { Avatar } from '@material-ui/core';
 
 import fav from "fav2.png";
+import { verMinhasCarteira } from 'index';
 
 export const CATEGORIA_LIST = [
   "Combos",
@@ -123,6 +125,7 @@ const categories = [
       { id: 'Painel do Revendedor', icon: <DnsRoundedIcon />, i: 'revendedor' },
       { id: 'Carrinho de Venda', icon: <ShoppingCart />, i: 'cart' },
       { id: 'Minhas Comissões', icon: <MonetizationOnIcon />, i: 'comissoes' },
+      { id: 'Minha Carteira', icon: <AccountBalanceWalletIcon />, i: 'carteira' },
       { id: 'Meus Afiliados', icon: <GroupAddIcon />, i: 'afiliados' },
     ],
   }
@@ -192,6 +195,8 @@ function Navegador(props) {
       verMinhasComissoes();
     } else if (i === 'afiliados') {
       verMeusAfiliados();
+    } else if (i === 'carteira') {
+      verMinhasCarteira()
     } else {
       
     }

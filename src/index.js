@@ -435,6 +435,10 @@ export let verMeusAfiliados = () => {
   hist.push('/afiliados');
 }
 
+export let verMinhasCarteira = () => {
+  hist.push('/carteira');
+}
+
 export let interfaceMain = () => {
   hist?.push('/');
   //window?.location.reload();
