@@ -8,6 +8,7 @@ import InputAgendamento from "./InputAgendamento";
 
 import imagem from "mymoney.png";
 import Pb from "views/my/Pb";
+import { SubHead } from "views/ProductPage/SubHead";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAtMQ-oTpBa3YNeLf8DTRYdKWDQxMXFuvE",
@@ -192,20 +193,33 @@ const getAgendamento = async (uid) => {
     const tamanho = querySnapshot.size;
 
     let list = [];
+    let listEmAndamento = [];
     let emAndamento = null;
     let ultimo = 0;
 
     for (let i = 0; i < tamanho; i++) {
+
         const item = qDocs[i];
         const data = item.data();
-        list.push(data);
+
+        const concluida = (data.status === 5);
+        if (concluida) {
+            list.push(data);
+        }
+
+        const andamento = (data.status !== 3 && data.status !== 5);
+        if (andamento) {
+            listEmAndamento.push(data);
+        }
+
+    }
+
+    if (listEmAndamento.length > 0) {
+        emAndamento = listEmAndamento[0];
     }
 
     if (list.length > 0) {
-        const item = list[0];
-        const andamento = (item.status !== 3 || item.status !== 5);
-        emAndamento = andamento ? item : null;
-        ultimo = list.length > 1 ? list[1].valorFinal : 0;
+        ultimo = list[0].valorFinal;
     }
 
     return { list, emAndamento, ultimo };
@@ -356,8 +370,10 @@ function ContentMain({ classes, state, setState, agendar }) {
 
         <div>
 
-            <Container maxWidth="lg" style={{ paddingTop: '100px', paddingBottom: '0px', }} >
-
+            <Container maxWidth="lg" style={{ paddingTop: '80px', paddingBottom: '0px', }} >
+                <SubHead
+                    title="Resumo da Carteira"
+                />
                 <Grid container spacing={3}>
 
                     <Grid item xs={12} md={4} lg={4}>
@@ -381,6 +397,19 @@ function ContentMain({ classes, state, setState, agendar }) {
                             classes={classes} />
                     </Grid>
 
+
+
+                </Grid>
+
+
+
+            </Container>
+
+            <Container style={{ paddingTop: '20px', paddingBottom: '0px', }}>
+                <SubHead
+                    title="Solicitação de Agendamento"
+                />
+                <Grid container>
                     <Grid item xs={12}>
                         <ContentInputs
                             classes={classes}
@@ -388,10 +417,7 @@ function ContentMain({ classes, state, setState, agendar }) {
                             state={state}
                             setState={setState} />
                     </Grid>
-
                 </Grid>
-
-
 
             </Container>
 
@@ -478,7 +504,7 @@ export default function Carteira() {
                     }
 
 
-                    console.log(listAgendamentos, emAndamento)
+                    console.log(ultimo, emAndamento)
 
                     setState((prevState) => ({
                         ...prevState,
@@ -511,7 +537,7 @@ export default function Carteira() {
             load: true
         }));
 
-        salvarAgendamento(state, ({data, sucess}) => {
+        salvarAgendamento(state, ({ data, sucess }) => {
 
             if (sucess) {
 

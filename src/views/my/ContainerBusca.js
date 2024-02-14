@@ -266,7 +266,7 @@ export default function ContainerBusca(props) {
 					</h4>
 				</div>
 
-				<Card raised className={classes.card}>
+				<Card className={classes.card}>
 					<CardBody className={classes.cardBody}>
 						<form onSubmit={() => props.pesquisar(textPesquisa)}>
 							<GridContainer>

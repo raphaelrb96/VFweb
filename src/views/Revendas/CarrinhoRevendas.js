@@ -422,19 +422,21 @@ const calcularTotal = (list, state) => {
 	let somaTT = calcularItens(list);
 
 	const listPagamento = getListPagamentos();
-	const listaParcelamento = getListParcelamento(somaTT);
 	const listEntrega = getListEntrega();
 	const listGarantia = getListaGarantia(somaTT);
 
 	const entregaSelecionada = listEntrega[entrega];
 	const garantiaSelecidonada = listGarantia[garantia];
 	const pagamentoSelecionada = listPagamento[pagamento];
-	const parcelamentoSelecionado = listaParcelamento[parcelamento];
 
 	const valorGarantia = garantiaSelecidonada.valor;
 	const valorEntrega = entregaSelecionada.valor;
-	const taxaParcela = parcelamentoSelecionado.total;
 
+
+
+	const listaParcelamento = getListParcelamento(somaTT + valorEntrega + valorGarantia);
+	const parcelamentoSelecionado = listaParcelamento[parcelamento];
+	const taxaParcela = parcelamentoSelecionado.total;
 
 
 	let totalCalculo = valorGarantia + valorEntrega + somaTT;
@@ -469,14 +471,21 @@ function ContainerTopTeste({ classes, state, setState }) {
 	const totalItens = calcularItens(state.lista);
 
 	const listPagamento = getListPagamentos();
-	const listaParcelamento = getListParcelamento(totalItens);
 	const listEntrega = getListEntrega();
 	const listGarantia = getListaGarantia(totalItens);
 
 	const entregaSelecionada = listEntrega[entrega];
 	const garantiaSelecidonada = listGarantia[garantia];
 	const pagamentoSelecionada = listPagamento[pagamento];
+
+	const valorGarantia = garantiaSelecidonada.valor;
+	const valorEntrega = entregaSelecionada.valor;
+
+
+
+	const listaParcelamento = getListParcelamento(totalItens + valorEntrega + valorGarantia);
 	const parcelamentoSelecionado = listaParcelamento[parcelamento];
+	const taxaParcela = parcelamentoSelecionado.total;
 
 	const changePagamento = (event) => {
 		const { value } = event.target;
@@ -615,12 +624,12 @@ function ContainerTopTeste({ classes, state, setState }) {
 							label="Opções de parcelas"
 							value={parcelamentoSelecionado.pos}
 							onChange={changeParcelas}
-							helperText={parcelamentoSelecionado.descricao}
+							helperText={`Acrescimo de ${parcelamentoSelecionado.totalString}`}
 							variant="outlined">
 
 							{listaParcelamento.map(item => (
 								<MenuItem value={item.pos}>
-									{item.titulo}: {item.valorString}
+									{item.descricao}
 								</MenuItem>
 							))}
 
@@ -865,7 +874,7 @@ function BotaoLimpar({ setState, state, classes }) {
 
 					window?.scrollTo(0, 0);
 
-					if(lista.length === 0) return;
+					if (lista.length === 0) return;
 
 					setState((prevState) => ({
 						...prevState,
@@ -915,14 +924,21 @@ function ResumoContent({ classes, state, setState }) {
 	const totalItens = calcularItens(state.lista);
 
 	const listPagamento = getListPagamentos();
-	const listaParcelamento = getListParcelamento(totalItens);
 	const listEntrega = getListEntrega();
 	const listGarantia = getListaGarantia(totalItens);
 
 	const entregaSelecionada = listEntrega[entrega];
 	const garantiaSelecidonada = listGarantia[garantia];
 	const pagamentoSelecionada = listPagamento[pagamento];
+
+	const valorGarantia = garantiaSelecidonada.valor;
+	const valorEntrega = entregaSelecionada.valor;
+
+
+
+	const listaParcelamento = getListParcelamento(totalItens + valorEntrega + valorGarantia);
 	const parcelamentoSelecionado = listaParcelamento[parcelamento];
+	const taxaParcela = parcelamentoSelecionado.total;
 
 	const totalComissao = calcularComissao(state.lista);
 
@@ -1005,7 +1021,7 @@ function ResumoContent({ classes, state, setState }) {
 				size="large"
 				startIcon={<CheckOutlinedIcon fontSize="large" />}
 				color="secondary"
-				onClick={() => finalizarRevenda({pagamento, parcelamento, entrega, garantia})}>
+				onClick={() => finalizarRevenda({ pagamento, parcelamento, entrega, garantia })}>
 				Continuar
 			</Button>
 		</ThemeProvider>

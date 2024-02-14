@@ -107,7 +107,7 @@ export default function InputAgendamento({ state, setState, click }) {
     <ThemeProvider theme={theme}>
 
       <Typography variant="h6" className={classes.title} gutterBottom>
-        Agendamento Do Pagamento
+        Informações De Pagamento
       </Typography>
 
       <Grid container spacing={3}>

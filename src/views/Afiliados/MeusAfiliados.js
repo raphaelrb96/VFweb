@@ -146,8 +146,8 @@ class ItemAfiliado extends React.Component {
 			<GridItem style={{
 				marginRight: '0px',
 				marginLeft: '0px'
-			}} xs={12} md={4} sm={3}>
-				<Card raised pricing>
+			}} xs={12} md={6} lg={4} sm={6}>
+				<Card pricing>
 					<Box className={this.props.classes.containerItem} pricing>
 
 						<Avatar className={this.props.classes.avatar}>
@@ -375,26 +375,27 @@ function ContainerTopo({ classes, state, setState }) {
 
 
 	return (
-		<div className={classes.container}>
-			<GridContainer>
-				<GridItem
-					xs={12}
-					sm={6}
-					md={6}
+		<Container className={classes.container}>
+			<GridContainer container>
+				<Grid item
+					xs={10}
+					md={8}
 					className={classNames(classes.mlAuto, classes.mrAuto)}>
 
 					<div className={classes.textCenter}>
-						<h1 className={classes.title}>Cadastro de Revendedores</h1>
+						<Typography variant="h4" className={classes.title}>
+							Cadastro de Revendedores
+						</Typography>
 						<br />
-						<p className={classes.description}>
+						<Typography variant="p" className={classes.description}>
 							Ganhe dinheiro sem trabalhar! Convide pessoas para VendaFavorita e ganhe comissões sempre que essas pessoas fizerem vendas.
-						</p>
-						<p className={classes.description}>
+						</Typography>
+						<Typography variant="p" className={classes.description}>
 							Insira abaixo o apelido do usuario que você quer cadastrar na sua rede !
-						</p>
+						</Typography>
 					</div>
 
-					<Card raised className={classes.card}>
+					<Card className={classes.card}>
 						<CardBody className={classes.cardBody}>
 							<form>
 								<GridContainer>
@@ -427,22 +428,22 @@ function ContainerTopo({ classes, state, setState }) {
 
 					<div style={{ marginTop: '45px' }} className={classes.textCenter}>
 
-						<h5>Compartilhar link de Recrutamento</h5>
+						<Typography variant="subtitle1">Compartilhar link de Recrutamento</Typography>
 
 					</div>
 
-					<Box style={{ marginTop: '25px' }} className={classNames(classes.textCenter, classes.contentCenter )}>
+					<Box style={{ marginTop: '25px' }} className={classNames(classes.textCenter, classes.contentCenter)}>
 
-						<WhatsappShareButton url={linkAtual} className={classes.btnWhats} style={{backgroundColor: '#25d366', padding: 10, borderRadius: 16}} title="" separator="" >
+						<WhatsappShareButton url={linkAtual} className={classes.btnWhats} style={{ backgroundColor: '#25d366', padding: 10, borderRadius: 16 }} title="" separator="" >
 							<WhatsappIcon size={32} round />
 							<Typography className={classes.txtBtn}>ENVIAR  LINK</Typography>
 						</WhatsappShareButton>
 
 					</Box>
 
-				</GridItem>
+				</Grid>
 			</GridContainer>
-		</div>
+		</Container>
 	);
 };
 
@@ -467,24 +468,22 @@ function ContentAfiliados({ classes, state, setState }) {
 			<ContainerTopo state={state} setState={setState} classes={classes} />
 
 
-			<div style={{ marginTop: "20px" }} >
-				<div className={classes.pricingSection}>
+			<Box className={classes.pricingSection}>
 
-					<h3 style={{ marginTop: "40px", marginBottom: "70px" }} className={classNames(classes.features, classes.textCenter, classes.cardTitle)}>
-						Meus Afiliados
-					</h3>
+				<Typography variant="h6" style={{ marginTop: "70px", marginBottom: "30px" }} className={classNames(classes.features, classes.textCenter, classes.cardTitle)}>
+					Meus Afiliados
+				</Typography>
 
-					<GridContainer style={{ marginRight: "15px", marginLeft: "15px" }}>
+				<GridContainer style={{ marginRight: "5px", marginLeft: "5px" }}>
 
-						{state.meusAfiliados.map((item, i) => (
+					{state.meusAfiliados.map((item, i) => (
 
-							<ItemAfiliado img={item.pathFoto} nome={item.nome} admConfirmado={item.admConfirmado} apelido={item.userName} numero={item.celular} classes={classes} />
+						<ItemAfiliado img={item.pathFoto} nome={item.nome} admConfirmado={item.admConfirmado} apelido={item.userName} numero={item.celular} classes={classes} />
 
-						))}
+					))}
 
-					</GridContainer>
-				</div>
-			</div>
+				</GridContainer>
+			</Box>
 
 
 

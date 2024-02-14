@@ -207,13 +207,13 @@ function Paperbase(props) {
       case 3:
         return 'Detalhes do Produto';
       case 4:
-        return 'Comissões';
+        return 'Minhas Comissões';
       case 5:
-        return 'Afiliados';
+        return 'Meus Afiliados';
       case 6:
         return 'Novo Pedido';
       case 7:
-        return 'Carteira';
+        return 'Minha Carteira';
     }
   };
 
