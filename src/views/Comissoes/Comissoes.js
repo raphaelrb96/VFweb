@@ -222,7 +222,7 @@ function FinancaComissoes(props) {
 
 
 	return (
-		<Card style={{ minHeight: 240, padding: '20px', marginTop: 20, display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff', borderRadius: 16 }}>
+		<Card style={{ minHeight: 240, padding: '20px', margin: 0, display: 'flex', overflow: 'auto', flexDirection: 'column', backgroundColor: '#fff', borderRadius: 16 }}>
 
 			<Title>{props.title}</Title>
 			<Typography className={props.classes.valor} variant="h4">
@@ -254,10 +254,10 @@ class ItemComissaoVenda extends React.Component {
 
 			<GridItem style={{
 				marginRight: '0px',
-				marginLeft: '0px'
+				marginLeft: '0px',
 			}} xs={12} lg={4} sm={6}>
 
-				<Card style={{ borderRadius: 16 }} pricing>
+				<Card style={{ borderRadius: 16}} pricing>
 					<CardBody pricing>
 						<h6
 						>
@@ -381,9 +381,13 @@ function ContentMain({ classes, state }) {
 
 		<div>
 
-			<Container maxWidth="lg" style={{ paddingTop: '80px', paddingBottom: '0px', }} >
+			<Container maxWidth="lg" style={{ paddingTop: '80px', paddingBottom: '0px'}} >
 
-				<Grid container spacing={3}>
+				<SubHead
+					title="Resumo das Comissões"
+				/>
+
+				<Grid container spacing={3} style={{marginTop: 20}}>
 
 					<Grid item xs={12} md={4} lg={4}>
 						<FinancaComissoes
@@ -412,9 +416,8 @@ function ContentMain({ classes, state }) {
 				</Grid>
 			</Container>
 
-			<Container style={{ marginTop: "20px" }} >
+			<Container style={{ marginTop: "20px", paddingTop: "20px" }} >
 				<SubHead
-					center
 					title="Historico de Comissões em Revendas"
 				/>
 				<GridContainer container>
@@ -429,7 +432,6 @@ function ContentMain({ classes, state }) {
 			<Container style={{ marginTop: "20px" }} >
 
 				<SubHead
-					center
 					title="Historico de Recompensas e Bônus de indicações"
 				/>
 

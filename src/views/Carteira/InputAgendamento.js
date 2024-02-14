@@ -7,6 +7,8 @@ import Checkbox from '@material-ui/core/Checkbox';
 import CheckOutlinedIcon from '@material-ui/icons/CheckOutlined';
 
 import { Button, Container, ThemeProvider, createTheme, makeStyles } from '@material-ui/core';
+import Pb from 'views/my/Pb';
+import { grayColor } from 'assets/jss/material-kit-pro-react';
 
 const useStyles = makeStyles(theme => ({
   buttons: {
@@ -20,29 +22,41 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(2),
     fontSize: 16,
     paddingTop: 6,
-    marginTop: 26,
-    marginBottom: 26,
+    marginTop: 46,
+    marginBottom: 46,
     paddingBottom: 6,
     height: 60
   },
+  title: {
+    marginBottom: 40,
+    textAlign: 'center'
+  }
 }));
 
 const theme = createTheme({
   palette: {
-    
+
     secondary: {
       light: '#004dcf',
       main: '#1A237E',
       dark: '#060D51',
     },
-    
+
   },
-  
+
 });
 
-export default function InputAgendamento({ state, setState }) {
+export default function InputAgendamento({ state, setState, click }) {
 
   const classes = useStyles();
+
+  function Prazo({ previsao }) {
+    return (
+      <Typography style={{textAlign: 'center', color: grayColor[12]}} variant='body2'>
+        {(previsao === '') ? 'Aguardando Confirmação' : previsao}
+      </Typography>
+    );
+  }
 
 
   const setChave = (event) => {
@@ -87,10 +101,12 @@ export default function InputAgendamento({ state, setState }) {
 
   };
 
+  const componentExtra = state.emAndamento ? <Prazo previsao={state.emAndamento.previsao} /> : null;
+
   return (
     <ThemeProvider theme={theme}>
 
-      <Typography variant="h6" style={{ marginBottom: 20, textAlign: 'center' }} gutterBottom>
+      <Typography variant="h6" className={classes.title} gutterBottom>
         Agendamento Do Pagamento
       </Typography>
 
@@ -99,6 +115,7 @@ export default function InputAgendamento({ state, setState }) {
         <Grid item xs={12}>
           <TextField
             required
+            disabled={state.emAndamento}
             label="Chave Pix"
             variant='outlined'
             fullWidth
@@ -109,6 +126,7 @@ export default function InputAgendamento({ state, setState }) {
         <Grid item xs={12}>
           <TextField
             required
+            disabled={state.emAndamento}
             variant='outlined'
             onChange={setTitular}
             label="Titular da Conta"
@@ -119,6 +137,7 @@ export default function InputAgendamento({ state, setState }) {
         <Grid item xs={12}>
           <TextField
             required
+            disabled={state.emAndamento}
             variant='outlined'
             onChange={setBanco}
             label="Banco"
@@ -128,15 +147,24 @@ export default function InputAgendamento({ state, setState }) {
         </Grid>
 
         <Container>
-          <Button
-            variant="contained"
-            color="secondary"
-            fullWidth
-            startIcon={<CheckOutlinedIcon fontSize="large" />}
-            onClick={() => { }}
-            className={classes.button}>
-            Agendar Saque
-          </Button>
+          {
+            state.load ?
+              <Pb />
+              :
+              <Button
+                variant="contained"
+                color="secondary"
+                disabled={state.emAndamento}
+                fullWidth
+                startIcon={!state.emAndamento ? <CheckOutlinedIcon fontSize="large" /> : null}
+                onClick={click}
+                className={classes.button}>
+                {state.emAndamento ? 'Saque Em Andamento' : 'Agendar Saque'}
+              </Button>
+          }
+
+          {componentExtra}
+
         </Container>
 
       </Grid>
