@@ -34,6 +34,7 @@ import { initializeApp } from "firebase/app";
 import { collection, deleteDoc, doc, getFirestore, onSnapshot, setDoc, writeBatch } from "firebase/firestore";
 import { FacebookAuthProvider, GoogleAuthProvider, getAuth, signInAnonymously } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
+import PoliticasSeguras from "views/PoliticasSeguras/PoliticasSeguras";
 
 export let listaProdutosPrincipal = Array();
 export let totalCheckout = 0;
@@ -68,6 +69,7 @@ export const firebaseConfig = {
 // Initialize Firebase
 export const mApp = initializeApp(firebaseConfig);
 const firedb = getFirestore(mApp);
+const authFirebase = getAuth(mApp);
 
 let auth = () => {
   getAuth().onAuthStateChanged(
@@ -239,6 +241,9 @@ export function addToCart(documento, idProd) {
   let listaIds = Array();
   listaIds.push(documento.idProdut);
 
+  abrirCart();
+
+  return;
 
   window.fbq('track', 'AddToCart', {
     value: documento.valorUni,
@@ -267,7 +272,7 @@ export function addToCart(documento, idProd) {
     value: documento.valorUni
   });
 
-  abrirCart();
+  
 }
 
 let loginAnonimo = () => {
@@ -343,9 +348,9 @@ export let loginFaceMaster = () => {
 }
 
 export let signOut = () => {
-  getAuth().signOut().then(function () {
+  authFirebase.signOut().then(function () {
     // Sign-out successful.
-    window.location.reload();
+    //window.location.reload();
   }).catch(function (error) {
     // An error happened.
   });
@@ -439,6 +444,10 @@ export let verMinhasCarteira = () => {
   hist.push('/carteira');
 }
 
+export let verMeuPerfil = () => {
+  hist.push('/perfil');
+}
+
 export let interfaceMain = () => {
   hist?.push('/');
   //window?.location.reload();
@@ -527,9 +536,9 @@ ReactDOM.render(
   <Router history={hist}>
     <Switch>
       <Route path="/update" component={withRouter(ActivityMain)} />
+      <Route path="/politicas-seguras" component={withRouter(PoliticasSeguras)} />
       <Route path="/cadastro" component={withRouter(Cadastro)} />
       <Route path="/formulario" component={withRouter(SignupPage)} />
-      <Route path="/perfil" component={withRouter(ProfilePage)} />
       <Route path="/ganhe-dinheiro" component={withRouter(LandingPage)} />
       <Route path="/carrinho" component={withRouter(ShoppingCartPage)} />
       <Route path="/error-page" component={withRouter(ErrorPage)} />

@@ -9,6 +9,7 @@ import InputAgendamento from "./InputAgendamento";
 import imagem from "mymoney.png";
 import Pb from "views/my/Pb";
 import { SubHead } from "views/ProductPage/SubHead";
+import { abrirLogin } from "index";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAtMQ-oTpBa3YNeLf8DTRYdKWDQxMXFuvE",
@@ -251,6 +252,7 @@ const confirmarDados = (state) => {
 const getDadosAgendamento = (idRef, valor, state) => {
 
     const { chave, banco, titular } = state.document;
+    const { nome, uid, userName, pathFoto } = state.usuario;
 
     return {
         id: idRef,
@@ -262,7 +264,11 @@ const getDadosAgendamento = (idRef, valor, state) => {
         status: 1,
         chave: chave,
         bank: banco,
-        titular: titular
+        titular: titular,
+        nome: nome, 
+        foto: pathFoto,
+        uid: uid,
+        apelido: userName
     };
 };
 
@@ -467,7 +473,7 @@ export default function Carteira() {
                     const docUsuario = await verificarRegistro(usr);
 
                     if (!docUsuario) {
-                        abrirFormulario();
+                        abrirLogin();
                         return;
                     }
 
@@ -504,7 +510,6 @@ export default function Carteira() {
                     }
 
 
-                    console.log(ultimo, emAndamento)
 
                     setState((prevState) => ({
                         ...prevState,
@@ -531,6 +536,14 @@ export default function Carteira() {
     }, []);
 
     const registrarAgendamento = async () => {
+
+        if(state.load) return;
+
+        const valor = state.totalAReceber;
+        if(valor === 0) {
+            alert('A conta não tem nenhum valor disponivel pra saque');
+            return;
+        }
 
         setState((prevState) => ({
             ...prevState,

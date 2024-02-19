@@ -28,7 +28,6 @@ import Muted from "components/Typography/Muted.js";
 import Parallax from "components/Parallax/Parallax.js";
 import Clearfix from "components/Clearfix/Clearfix.js";
 import Media from "components/Media/Media.js";
-import Button from "components/CustomButtons/Button.js";
 
 import christian from "assets/img/faces/christian.jpg";
 import oluEletu from "assets/img/examples/olu-eletu.jpg";
@@ -44,28 +43,77 @@ import cardProfile2Square from "assets/img/faces/card-profile2-square.jpg";
 
 import Pb from 'views/my/Pb';
 
-import {mFirebase, abrirFormulario, mUser, mUid, mApelido, mPathFoto, mCelular, mNome, mUsuarioRegistrado, abrirPainelRevendas, verificarUsuario} from 'index.js';
+import { mFirebase, abrirFormulario, mUser, mUid, mApelido, mPathFoto, mCelular, mNome, mUsuarioRegistrado, abrirPainelRevendas, verificarUsuario } from 'index.js';
 
 
 import profilePageStyle from "assets/jss/material-kit-pro-react/views/profilePageStyle.js";
 import { getAuth } from "firebase/auth";
-import { doc, getDoc, getFirestore } from "firebase/firestore";
+import { doc, getDoc, getFirestore, updateDoc } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
+import { Avatar, Button, Container, Grid } from "@material-ui/core";
+import { signOut } from "index";
+import { SubHead } from "views/ProductPage/SubHead";
+import { abrirLogin } from "index";
 
 const firebaseConfig = {
-	apiKey: "AIzaSyAtMQ-oTpBa3YNeLf8DTRYdKWDQxMXFuvE",
-	authDomain: "venda-favorita.firebaseapp.com",
-	databaseURL: "https://venda-favorita.firebaseio.com",
-	projectId: "venda-favorita",
-	storageBucket: "venda-favorita.appspot.com",
-	messagingSenderId: "978500802251",
-	appId: "1:978500802251:web:1aad0e093739f59969ed4e",
-	measurementId: "G-EK2ZQP9BKK"
+  apiKey: "AIzaSyAtMQ-oTpBa3YNeLf8DTRYdKWDQxMXFuvE",
+  authDomain: "venda-favorita.firebaseapp.com",
+  databaseURL: "https://venda-favorita.firebaseio.com",
+  projectId: "venda-favorita",
+  storageBucket: "venda-favorita.appspot.com",
+  messagingSenderId: "978500802251",
+  appId: "1:978500802251:web:1aad0e093739f59969ed4e",
+  measurementId: "G-EK2ZQP9BKK"
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const useStyles = makeStyles(profilePageStyle);
+const useStyles = makeStyles(theme => ({
+  //...profilePageStyle,
+  imgGallery: {
+    width: '100%',
+    marginTop: "26px",
+    padding: 20
+  },
+  container: {
+    marginBottom: '60px',
+    marginTop: '80px'
+  },
+  imgFluid: {
+    width: 100,
+    height: 100,
+    margin: 10
+  },
+  imgRounded: {
+  },
+  imgRoundedCircle: {
+    borderRadius: "50% !important",
+  },
+  profile: {
+    textAlign: "center",
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignContent: 'center',
+    alignItems: 'center',
+    paddingTop: '32px',
+    paddingBottom: '32px',
+    "& img": {
+      maxWidth: "160px",
+    }
+  },
+  itemSolicitacao: {
+
+  },
+  btn: {
+    marginTop: 6,
+    marginBottom: 32
+  },
+  card: {
+    marginTop: 0,
+    borderRadius: 16
+  }
+}));
 
 
 class MeuPerfil extends React.Component {
@@ -95,123 +143,124 @@ class MeuPerfil extends React.Component {
 
   verificarRegistro(usr) {
 
-      const refDoc = doc(db, "Usuario", usr.uid);
-      getDoc(refDoc).then(doc => {
-          if (doc !== null || doc !== undefined) {
+    const refDoc = doc(db, "Usuario", usr.uid);
+    getDoc(refDoc).then(doc => {
+      if (doc !== null || doc !== undefined) {
 
 
 
-            if (doc.get('userName') === null || doc.get('userName') === undefined || doc.get('userName') === '') {
-              //abrirPainelRevendas();
-              abrirFormulario();
+        if (doc.get('userName') === null || doc.get('userName') === undefined || doc.get('userName') === '') {
+          //abrirPainelRevendas();
+          abrirLogin();
 
-            } else {
-              let apelido = doc.get('userName');
-              let pathFoto = doc.get('pathFoto');
-              let celular = doc.get('celular');
-              let nome = usr.displayName;
-              let email = usr.email;
+        } else {
+          let apelido = doc.get('userName');
+          let pathFoto = doc.get('pathFoto');
+          let celular = doc.get('celular');
+          let nome = usr.displayName;
+          let email = usr.email;
 
-              let possuiSolicitacao = false;
+          let possuiSolicitacao = false;
 
-              if (doc.get('usernameAdm') !== undefined) {
+          if (doc.get('usernameAdm')) {
 
-                 if (doc.get('usernameAdm').length > 0) {
+            if (doc.get('usernameAdm').length > 0) {
 
 
-                    if (doc.get('admConfirmado') === true) {
+              if (doc.get('admConfirmado') === true) {
 
-                        //possui um adm confirmado
-
-                    } else {
-
-                        //possui uma solicitacao de adm
-                        possuiSolicitacao = true;
-
-                    }
-
-                 }
+                //possui um adm confirmado
 
               } else {
-                  //nao possui nenhum adm
+
+                //possui uma solicitacao de adm
+                possuiSolicitacao = true;
+
               }
 
-
-              this.setState({
-                loading: false,
-                apelido: apelido,
-                pathFoto: pathFoto,
-                celular: celular,
-                nome: nome,
-                email: email,
-                uidAdm: doc.get('uidAdm'),
-                usernameAdm: doc.get('usernameAdm'),
-                nomeAdm: doc.get('nomeAdm'),
-                pathFotoAdm: doc.get('pathFotoAdm'),
-                admConfirmado: doc.get('admConfirmado'),
-                solicitacaoExistente: possuiSolicitacao,
-                user: usr
-              });
             }
-            
+
+          } else {
+            //nao possui nenhum adm
           }
-        });
+
+
+          this.setState({
+            loading: false,
+            apelido: apelido,
+            pathFoto: pathFoto,
+            celular: celular,
+            nome: nome,
+            email: email,
+            uidAdm: doc.get('uidAdm'),
+            usernameAdm: doc.get('usernameAdm'),
+            nomeAdm: doc.get('nomeAdm'),
+            pathFotoAdm: doc.get('pathFotoAdm'),
+            admConfirmado: doc.get('admConfirmado'),
+            solicitacaoExistente: possuiSolicitacao,
+            user: usr
+          });
+        }
+
+      }
+    });
 
   }
 
   aceitar() {
 
-      let ref = getFirestore().collection("Usuario").doc(this.state.user.uid);
-      ref.update({
-        admConfirmado: true
-      });
+    const ref = doc(db, "Usuario", this.state.user.uid);
+    updateDoc(ref, {
+      admConfirmado: true
+    });
 
-      this.setState({
-        admConfirmado: true,
-        solicitacaoExistente: false
-      });
+    this.setState({
+      admConfirmado: true,
+      solicitacaoExistente: false
+    });
 
   }
 
   recusar() {
-    let ref = getFirestore().collection("Usuario").doc(this.state.user.uid);
-      ref.update({
-        admConfirmado: false,
-        uidAdm: '',
-        usernameAdm: '',
-        nomeAdm: '',
-        pathFotoAdm: ''
-      });
+    const ref = doc(db, "Usuario", this.state.user.uid);
 
-      this.setState({
-        admConfirmado: false,
-        solicitacaoExistente: false,
-        admConfirmado: false,
-        uidAdm: '',
-        usernameAdm: '',
-        nomeAdm: '',
-        pathFotoAdm: ''
-      });
+    updateDoc(ref, {
+      admConfirmado: false,
+      uidAdm: '',
+      usernameAdm: '',
+      nomeAdm: '',
+      pathFotoAdm: ''
+    });
+
+    this.setState({
+      admConfirmado: false,
+      solicitacaoExistente: false,
+      admConfirmado: false,
+      uidAdm: '',
+      usernameAdm: '',
+      nomeAdm: '',
+      pathFotoAdm: ''
+    });
 
   }
 
   componentDidMount() {
     if (mUser === null || mUser === undefined || mUser.isAnonymous) {
 
-        getAuth().onAuthStateChanged(user => {
-          if (user) {
-            // User is signed in.
-            
-            this.verificarRegistro(user);
+      getAuth().onAuthStateChanged(user => {
+        if (user) {
+          // User is signed in.
 
-          }
-        });
+          this.verificarRegistro(user);
 
-      } else {
+        }
+      });
 
-        this.verificarRegistro(mUser);
+    } else {
 
-      }
+      this.verificarRegistro(mUser);
+
+    }
   }
 
 
@@ -226,23 +275,29 @@ class MeuPerfil extends React.Component {
 
     let containerSolicitacao = null;
 
-    if (this.state.solicitacaoExistente) {
+    const ContainerAdm = () => {
 
-      containerSolicitacao = (
+      if (this.state.solicitacaoExistente) {
 
-          <Media
+        return (
+          <Grid xs={12} md={7} item>
+            <SubHead
+              title="Gerenciamento"
+            />
+            <Card className={classes.card}>
+              <Media
                 key={Math.random() * Date.now()}
                 avatar={this.state.pathFotoAdm}
-                style={{margin: '30px'}}
+                style={{ margin: '30px' }}
                 title={
-                  <span>
-                    @{this.state.usernameAdm} deseja se tornar seu ADM
-                  </span>
+                  <>
+                    @{this.state.usernameAdm} deseja se tornar seu Administrador
+                  </>
                 }
                 body={
                   <span>
                     <p>
-                      Aceite para que ele ganhe comissões a cada venda que você fizer... Aproveite e convide novas pessoas tambem !
+                      Aceite para que ele se torne seu mentor e te ajude na jornada para se tornar um vendedor online de sucesso !
                     </p>
                   </span>
                 }
@@ -260,7 +315,7 @@ class MeuPerfil extends React.Component {
                         simple
                         className={classes.floatRight}
                       >
-                         Aceitar
+                        Aceitar
                       </Button>
                     </Tooltip>
                     <Button
@@ -269,52 +324,53 @@ class MeuPerfil extends React.Component {
                       color="primary"
                       className={classes.floatRight}
                     >
-                       Recusar
+                      Recusar
                     </Button>
                   </div>
                 }
               />
+            </Card>
+          </Grid>
+        );
 
-      );
-
-    } else {
+      } else {
 
         if (this.state.admConfirmado) {
 
-            containerSolicitacao = (
+          return (
 
-          <Media
-                key={Math.random() * Date.now()}
-                avatar={this.state.pathFotoAdm}
-                style={{margin: '30px'}}
-                title={
-                  <span>
-                    @{this.state.usernameAdm}
-                  </span>
-                }
-                body={
-                  <span>
-                   
-                      Administrador/Recrutador
-                    
-                  </span>
-                }
+            <Grid xs={12} md={5} item >
+              <SubHead
+                title="Gerenciamento"
               />
+              <Card className={classes.card}>
+                <Media
+                  key={Math.random() * Date.now()}
+                  avatar={this.state.pathFotoAdm}
+                  style={{ margin: '10px' }}
+                  title={`@${this.state.usernameAdm}`}
+                  body={'Administrador'}
+                />
+              </Card>
+            </Grid>
 
-      );
+          );
 
         }
 
-    }
+      }
+
+      return null;
+    };
 
     if (this.state.loading) {
 
       elemento = (
 
         <div>
-          <br/>
+          <br />
           <Pb />
-          <br/>
+          <br />
         </div>
 
       );
@@ -327,33 +383,36 @@ class MeuPerfil extends React.Component {
 
         <div>
 
-          <GridContainer justify="center">
-            <GridItem xs={12} sm={12} md={6}>
+          <Grid container justifyContent="center">
+
+            <Grid item xs={12} sm={12} md={6}>
               <div className={classes.profile}>
-                <div>
-                  <img src={this.state.pathFoto} alt="..." className={imageClasses} />
-                </div>
+                <Avatar src={this.state.pathFoto} className={imageClasses} />
                 <div className={classes.name}>
                   <h3 className={classes.title}>{this.state.nome}</h3>
                   <h4>{'@' + this.state.apelido}</h4>
+                  <p>
+                    {this.state.email}
+                  </p>
                 </div>
               </div>
-            </GridItem>
-          </GridContainer>
+            </Grid>
 
-          <div className={classNames(classes.description, classes.textCenter)}>
-            <p>
-              {this.state.email}
-            </p>
+          </Grid>
 
-            <div>
-              <Button onClick={() => (abrirPainelRevendas())}  fullWidth >Abrir painel de revendas</Button>;
-            </div>
+          <Grid container justifyContent="center">
 
-            <br/>
-            <br/>
 
-          </div>
+            <Grid xs={10} md={5} item>
+
+              <Button variant="text" className={classes.btn} onClick={() => (signOut())} fullWidth>Sair da Conta</Button>
+            </Grid>
+
+            <br />
+            <br />
+
+          </Grid>
+
         </div>
 
       );
@@ -362,18 +421,28 @@ class MeuPerfil extends React.Component {
     }
 
 
-    return(
+    return (
 
-      <div style={{
-        paddingBottom: '50px'
-      }} >
-        <div style={{minHeight: '100px'}} className={classNames(classes.main, classes.mainRaised)}>
-          {elemento}
-        </div>
+      <Container className={classes.container} >
 
-        {containerSolicitacao}
+        <Grid justifyContent="center" spacing={3} container>
 
-      </div>
+          <Grid xs={12} md={7} item >
+            <SubHead
+              title="Informações da Conta"
+            />
+            <Card className={classes.card}>
+              {elemento}
+            </Card>
+
+          </Grid>
+
+          <ContainerAdm />
+
+        </Grid>
+
+
+      </Container>
 
     );
 

@@ -16,6 +16,8 @@ import Face from "@material-ui/icons/Face";
 import clsx from 'clsx';
 import { makeStyles } from "@material-ui/core/styles";
 
+import { Button as MyButton } from "@material-ui/core";
+
 import Close from "@material-ui/icons/Close";
 import Remove from "@material-ui/icons/Remove";
 import Add from "@material-ui/icons/Add";
@@ -67,10 +69,10 @@ import {
 	WhatsappIcon
 } from 'react-share';
 
-import { collection, doc, getDoc, getDocs, getFirestore, query, updateDoc, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, getFirestore, limit, query, updateDoc, where } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { initializeApp } from "firebase/app";
-import { Box } from "@material-ui/core";
+import { Box, ButtonBase } from "@material-ui/core";
 
 
 const firebaseConfig = {
@@ -120,7 +122,7 @@ const useStyles = makeStyles(theme => ({
 		justifyContent: 'center',
 		flexDirection: 'row',
 		alignItems: 'center',
-
+		marginBottom: '16px'
 	},
 	txtBtn: {
 		paddingLeft: '10px',
@@ -245,7 +247,7 @@ const verificarRegistro = async (usr) => {
 
 function ContainerTopo({ classes, state, setState }) {
 
-	const { apelidoNovoUsuario } = state;
+	const apelidoNovoUsuario = String(state.apelidoNovoUsuario).toLowerCase();
 
 
 	const buscarUsuarioPorApelido = async (apelidoNovoUsuario) => {
@@ -280,10 +282,16 @@ function ContainerTopo({ classes, state, setState }) {
 				...prevState,
 				validandoAfiliado: false
 			}));
+			window.location.reload();
 		});
 	};
 
 	const verificarNovoAfiliado = async () => {
+
+		if (apelidoNovoUsuario === '') {
+			alert('Insira um apelido');
+			return;
+		}
 
 
 		if (state.usuario.userName === apelidoNovoUsuario) {
@@ -298,9 +306,10 @@ function ContainerTopo({ classes, state, setState }) {
 				validandoAfiliado: true
 			}));
 
-			const userAtual = await buscarUsuarioPorApelido(apelidoNovoUsuario);
+			const resultUser = await buscarUsuarioPorApelido(apelidoNovoUsuario);
 
-			if (!userAtual) {
+
+			if (!resultUser) {
 
 				alert('Nenhum usuario encontrado com esse apelido');
 
@@ -311,7 +320,9 @@ function ContainerTopo({ classes, state, setState }) {
 
 			} else {
 
-				if (userAtual.admConfirmado === true) {
+				const userAtual = resultUser.data();
+
+				if (userAtual.admConfirmado) {
 
 					alert('Esse usuario ja possui um adm');
 					setState((prevState) => ({
@@ -323,7 +334,7 @@ function ContainerTopo({ classes, state, setState }) {
 
 					if (userAtual.usernameAdm === undefined || userAtual.usernameAdm === null || userAtual.usernameAdm.length === 0 || userAtual.usernameAdm === '') {
 
-						registrarAfiliacao(userAtual.ref);
+						registrarAfiliacao(resultUser.ref);
 
 					} else {
 
@@ -343,17 +354,25 @@ function ContainerTopo({ classes, state, setState }) {
 
 	};
 
-	const setApelido = (valor) => {
+	const copiarLink = () => {
+		navigator.clipboard.writeText(linkAtual);
+		alert('Link Copiado');
+	};
+
+	const setApelido = (e) => {
+		if (!e.target.value) return;
+		e.persist();
 		setState((prevState) => ({
 			...prevState,
-			apelidoNovoUsuario: valor.target.value
+			apelidoNovoUsuario: e?.target?.value
 		}));
 	};
 
 	let elemento = (
 		<Button
 			onClick={verificarNovoAfiliado}
-			color="verde"
+			color="verdin"
+			type="submit"
 			block
 			className={classes.subscribeButton}>
 			Cadastrar
@@ -397,11 +416,10 @@ function ContainerTopo({ classes, state, setState }) {
 
 					<Card className={classes.card}>
 						<CardBody className={classes.cardBody}>
-							<form>
+							<form onSubmit={() => verificarNovoAfiliado()}>
 								<GridContainer>
 									<GridItem xs={12} sm={6} md={6} lg={8}>
 										<CustomInput
-											id="emailPreFooter"
 											formControlProps={{
 												fullWidth: true,
 												className: classes.cardForm
@@ -413,7 +431,8 @@ function ContainerTopo({ classes, state, setState }) {
 													</InputAdornment>
 												),
 												placeholder: "Insira o apelido aqui...",
-												onChange: (setApelido)
+												onChange: setApelido,
+												defaultValue: state.apelidoNovoUsuario
 											}}
 										/>
 									</GridItem>
@@ -432,12 +451,16 @@ function ContainerTopo({ classes, state, setState }) {
 
 					</div>
 
-					<Box style={{ marginTop: '25px' }} className={classNames(classes.textCenter, classes.contentCenter)}>
+					<Box style={{ marginTop: '25px', flexDirection: 'column' }} className={classNames(classes.textCenter, classes.contentCenter)}>
 
 						<WhatsappShareButton url={linkAtual} className={classes.btnWhats} style={{ backgroundColor: '#25d366', padding: 10, borderRadius: 16 }} title="" separator="" >
 							<WhatsappIcon size={32} round />
 							<Typography className={classes.txtBtn}>ENVIAR  LINK</Typography>
 						</WhatsappShareButton>
+
+						<MyButton onClick={() => copiarLink()} color="#1A237E" variant="text">
+							COPIAR  LINK
+						</MyButton>
 
 					</Box>
 
@@ -467,23 +490,30 @@ function ContentAfiliados({ classes, state, setState }) {
 
 			<ContainerTopo state={state} setState={setState} classes={classes} />
 
+			{
+				state.meusAfiliados.length > 0
+					?
+					<Box className={classes.pricingSection}>
 
-			<Box className={classes.pricingSection}>
+						<Typography variant="h6" style={{ marginTop: "70px", marginBottom: "30px" }} className={classNames(classes.features, classes.textCenter, classes.cardTitle)}>
+							Meus Afiliados
+						</Typography>
 
-				<Typography variant="h6" style={{ marginTop: "70px", marginBottom: "30px" }} className={classNames(classes.features, classes.textCenter, classes.cardTitle)}>
-					Meus Afiliados
-				</Typography>
+						<GridContainer style={{ marginRight: "5px", marginLeft: "5px" }}>
 
-				<GridContainer style={{ marginRight: "5px", marginLeft: "5px" }}>
+							{state.meusAfiliados.map((item, i) => (
 
-					{state.meusAfiliados.map((item, i) => (
+								<ItemAfiliado img={item.pathFoto} nome={item.nome} admConfirmado={item.admConfirmado} apelido={item.userName} numero={item.celular} classes={classes} />
 
-						<ItemAfiliado img={item.pathFoto} nome={item.nome} admConfirmado={item.admConfirmado} apelido={item.userName} numero={item.celular} classes={classes} />
+							))}
 
-					))}
+						</GridContainer>
+					</Box>
+					:
+					null
+			}
 
-				</GridContainer>
-			</Box>
+
 
 
 
@@ -503,6 +533,8 @@ export default function MeusAfiliados(props) {
 		pb: true,
 		apelidoNovoUsuario: ''
 	});
+
+	console.log(state.apelidoNovoUsuario)
 
 	useEffect(() => {
 		window.scrollTo(0, 0);

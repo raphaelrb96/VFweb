@@ -52,8 +52,8 @@ export default function InputAgendamento({ state, setState, click }) {
 
   function Prazo({ previsao }) {
     return (
-      <Typography style={{textAlign: 'center', color: grayColor[12]}} variant='body2'>
-        {(previsao === '') ? 'Aguardando Confirmação' : previsao}
+      <Typography style={{textAlign: 'center', color: grayColor[12], marginBottom: 12}} variant='body2'>
+        {(previsao === '') ? 'Aguardando Confirmação' : `PREVISÃO: ${previsao}`}
       </Typography>
     );
   }

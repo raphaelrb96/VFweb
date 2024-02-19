@@ -42,8 +42,10 @@ import { mUser, mUid } from 'index.js';
 import { interfaceMain } from 'index.js';
 import Pb from 'views/my/Pb';
 import { collection, doc, getDoc, getDocs, getFirestore, query, updateDoc, where, writeBatch } from 'firebase/firestore';
-import { FacebookAuthProvider, GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth';
+import { FacebookAuthProvider, GoogleAuthProvider, getAuth, getRedirectResult, signInWithPopup, signInWithRedirect } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
+import { abrirLogin } from 'index';
+import { Grid } from '@material-ui/core';
 
 
 const firebaseConfig = {
@@ -58,6 +60,7 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 const useStyles = makeStyles(theme => ({
   appBar: {
@@ -65,7 +68,7 @@ const useStyles = makeStyles(theme => ({
   },
   layout: {
     width: 'auto',
-    marginTop: '100px',
+    marginTop: theme.spacing(4),
     marginLeft: theme.spacing(2),
     marginRight: theme.spacing(2),
     [theme.breakpoints.up(600 + theme.spacing(2) * 2)]: {
@@ -77,15 +80,16 @@ const useStyles = makeStyles(theme => ({
   paper: {
     marginTop: theme.spacing(3),
     marginBottom: theme.spacing(3),
-    padding: theme.spacing(2),
+    padding: theme.spacing(3),
     [theme.breakpoints.up(600 + theme.spacing(3) * 2)]: {
       marginTop: theme.spacing(6),
       marginBottom: theme.spacing(6),
-      padding: theme.spacing(3),
+      padding: theme.spacing(5),
     },
   },
   stepper: {
     padding: theme.spacing(3, 0, 5),
+    marginTop: 16
   },
   buttons: {
     display: 'flex',
@@ -110,6 +114,19 @@ const useStyles = makeStyles(theme => ({
   form: {
     marginLeft: '20px',
     marginRight: '20px'
+  },
+  container: {
+    backgroundColor: 'transparent',
+    flex: 1
+  },
+  containerLogin: {
+  },
+  titleMain: {
+    fontFamily: `"Roboto Slab", "Times New Roman", serif`,
+    marginTop: theme.spacing(6),
+    color: '#1A237E',
+    fontWeight: "bold",
+    textAlign: "center"
   }
 }));
 
@@ -249,38 +266,38 @@ class Conclusao extends React.Component {
     const q = query(collection(db, 'Usuario'), where("userName", "==", mApelido));
     getDocs(q).then(querySnapshot => {
 
-        console.log(querySnapshot);
+      console.log(querySnapshot);
 
-        if (querySnapshot.docs === null || querySnapshot.docs === undefined) {
-          // apelino nao existe
-          console.log('apelido nao existe, é nulo ou indefinido');
+      if (querySnapshot.docs === null || querySnapshot.docs === undefined) {
+        // apelino nao existe
+        console.log('apelido nao existe, é nulo ou indefinido');
 
-          this.salvarDados();
+        this.salvarDados();
+
+      } else {
+
+        console.log(querySnapshot.size);
+
+        if (querySnapshot.size > 0) {
+
+          //apelido existe
+          this.setState({
+            loading: false
+          });
+          console.log('apelido ja existe');
+          alert('Esse apelido ja existe, você precisa de um apelido unico... Tente outro nome');
 
         } else {
 
-          console.log(querySnapshot.size);
-
-          if (querySnapshot.size > 0) {
-
-            //apelido existe
-            this.setState({
-              loading: false
-            });
-            console.log('apelido ja existe');
-            alert('Esse apelido ja existe, você precisa de um apelido unico... Tente outro nome');
-
-          } else {
-
-            //apelido nao existe
-            this.salvarDados();
-            console.log('apelido nao existe, nenhuma busca encontrada');
-
-          }
-
+          //apelido nao existe
+          this.salvarDados();
+          console.log('apelido nao existe, nenhuma busca encontrada');
 
         }
-      });
+
+
+      }
+    });
 
 
   }
@@ -404,11 +421,20 @@ class Conclusao extends React.Component {
     });
   }
 
-  loginGoogle() {
-    let providerGoogle = new GoogleAuthProvider();
-    getAuth().languageCode = 'pt';
-    signInWithPopup(getAuth(), providerGoogle).then(result => {
-      let user = result.user;
+  async loginGoogle() {
+    this.setState({
+      pb: true
+    });
+    const providerGoogle = new GoogleAuthProvider();
+    auth.languageCode = 'pt';
+
+    await signInWithRedirect(auth, providerGoogle);
+
+    const result = await getRedirectResult(auth);
+
+    if (result) {
+      // This is the signed-in user
+      const user = result.user;
       this.setState({
         //usuario ta logado
         activeStep: 1,
@@ -416,9 +442,11 @@ class Conclusao extends React.Component {
         pb: true
       });
       this.carregarUsuario(user);
-    }).catch(error => {
-
-    });
+    } else {
+      this.setState({
+        pb: false
+      });
+    }
   }
 
   carregarDadosAdm() {
@@ -444,8 +472,6 @@ class Conclusao extends React.Component {
           console.log(querySnapshot.docs[0]);
 
           if (querySnapshot.size > 0) {
-
-
 
             this.setState({
               loading: false,
@@ -485,73 +511,76 @@ class Conclusao extends React.Component {
     const refDocUsuario = doc(db, 'Usuario', usr.uid);
     getDoc(refDocUsuario).then(doc => {
 
-        if (doc !== null || doc !== undefined) {
+      if (doc !== null || doc !== undefined) {
 
-          if (doc.get('userName') === null || doc.get('userName') === undefined || doc.get('userName') === '') {
-
-            this.setState({
-              //container formulario
-              //usuario ta logado, mas nao tem cadastro
-              activeStep: 1,
-              usuario: doc,
-              user: usr,
-              pb: false
-            });
-
-            //this.carregarDadosAdm();
-
-            return;
-
-          } else {
-
-            this.setState({
-              //container solicitacao adm
-              //usuario ta logado, ja ta castrado mas não tem adm
-              activeStep: 2,
-              usuario: doc,
-              user: usr,
-              pb: false
-            });
-
-            this.carregarDadosAdm();
-
-            return;
-
-          }
-
-        } else {
+        if (doc.get('userName') === null || doc.get('userName') === undefined || doc.get('userName') === '') {
 
           this.setState({
             //container formulario
             //usuario ta logado, mas nao tem cadastro
             activeStep: 1,
-            pb: false,
-            user: usr
+            usuario: doc,
+            user: usr,
+            pb: false
           });
 
           //this.carregarDadosAdm();
 
           return;
 
+        } else {
+
+          if (doc.data().admConfirmado) {
+            abrirPainelRevendas();
+            return;
+          }
+
+          this.setState({
+            //container solicitacao adm
+            //usuario ta logado, ja ta castrado mas não tem adm
+            activeStep: 2,
+            usuario: doc,
+            user: usr,
+            pb: false
+          });
+
+          this.carregarDadosAdm();
+
+          return;
+
         }
-      });
+
+      } else {
+
+        this.setState({
+          //container formulario
+          //usuario ta logado, mas nao tem cadastro
+          activeStep: 1,
+          pb: false,
+          user: usr
+        });
+
+        //this.carregarDadosAdm();
+
+        return;
+
+      }
+    });
   }
 
 
   componentDidMount() {
 
-    if (mUser === null || mUser === undefined) {
-      getAuth().onAuthStateChanged(user => {
-        if (user) {
-          // User is signed in.
+    getAuth().onAuthStateChanged(user => {
+      if (user) {
+        // User is signed in.
 
-          this.carregarUsuario(user);
+        this.carregarUsuario(user);
 
-        }
-      });
-    } else {
-      this.carregarUsuario(mUser);
-    }
+      } else {
+        abrirLogin();
+      }
+    });
 
 
   }
@@ -560,7 +589,7 @@ class Conclusao extends React.Component {
 
     this.setState({ loading: true });
 
-    const ref = db.collection("Usuario").doc(this.state.user.uid);
+    const ref = doc(db, "Usuario", this.state.user.uid);
 
     updateDoc(ref, {
       admConfirmado: true,
@@ -590,17 +619,19 @@ class Conclusao extends React.Component {
 
     let containerLogin = (
 
-      <CardBody>
+      <CardBody className={classes.containerLogin}>
 
         <h3 className={classes.textCenter}>Seus dados estão seguros</h3>
 
         <h5 className={classes.textCenter}>Faça a Autenticação para poder revender nossos produtos. Pedimos sua identificação atraves das redes sociais para manter um relacionamento mais seguro. So teremos acesso a dados públicos como: e-mail, nome, foto do perfil...</h5>
 
+        <br />
         <h3 className={classes.textCenter}> <strong>FAÇA SUA AUTENTICAÇÃO</strong></h3>
+        <br />
 
         <div className={classes.textCenter}>
 
-          <Button onClick={() => this.loginGoogle()} round color="google">
+          <Button onClick={() => this.loginGoogle()} round color="verdin">
             <i className="fab fa-google" />
             <Typography style={{ paddingLeft: 10 }}>
               Com Google
@@ -753,18 +784,23 @@ class Conclusao extends React.Component {
 
     }
 
+    console.log(this.state)
+
 
     return (
 
-      <React.Fragment>
-        <CssBaseline />
+      <Grid container justifyContent='center' className={classes.container}>
+
+        <Grid item xs={12} sm={9} md={7}>
+          <Typography className={classes.titleMain} variant='h2'>Venda Favorita</Typography>
+        </Grid>
 
 
 
-        <main className={classes.layout}>
+        <Grid item xs={12} sm={9} md={7} className={classes.layout}>
           <Paper className={classes.paper}>
-            <Typography component="h1" variant="h4" align="center">
-              Cadastro
+            <Typography component="h3" variant="h4" align="center">
+              Liberar Acesso
             </Typography>
             <Stepper activeStep={activeStep} connector={<QontoConnector />} className={classes.stepper}>
               {steps.map(label => (
@@ -783,9 +819,9 @@ class Conclusao extends React.Component {
               )}
             </React.Fragment>
           </Paper>
-        </main>
+        </Grid>
 
-      </React.Fragment>
+      </Grid>
 
     );
 

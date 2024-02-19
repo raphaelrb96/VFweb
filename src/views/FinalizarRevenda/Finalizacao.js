@@ -1,21 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ThemeProvider, createTheme, makeStyles, withStyles } from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import Paper from '@material-ui/core/Paper';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
 import Button from '@material-ui/core/Button';
-import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
 import Endereco from 'views/FinalizarRevenda/Endereco.js';
 import Resumo from 'views/FinalizarRevenda/Resumo.js';
 import IconButton from '@material-ui/core/IconButton';
-import PropTypes, { func } from 'prop-types';
-import Check from '@material-ui/icons/Check';
-import clsx from 'clsx';
 
 import Rodape from 'views/my/Rodape';
 
@@ -33,14 +27,10 @@ import CheckOutlinedIcon from '@material-ui/icons/CheckOutlined';
 
 
 
-import { voltar, totalCheckout } from "index.js";
-import { mUser, mUid } from 'index.js';
 import { interfaceMain } from 'index.js';
 import Pb from 'views/my/Pb';
-import { getAuth } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, getFirestore, onSnapshot, writeBatch } from 'firebase/firestore';
+
 import { getAnalytics, logEvent } from 'firebase/analytics';
-import { initializeApp } from 'firebase/app';
 import { Box, Card } from '@material-ui/core';
 import { abrirLogin } from 'index';
 import { abrirListaRevenda } from 'index';
@@ -50,6 +40,10 @@ import { getListParcelamento } from 'util/Listas';
 import { getListEntrega } from 'util/Listas';
 import { getListaGarantia } from 'util/Listas';
 import Cliente from './Cliente';
+
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { collection, doc, getDoc, getDocs, getFirestore, onSnapshot, writeBatch } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAtMQ-oTpBa3YNeLf8DTRYdKWDQxMXFuvE",
@@ -429,7 +423,7 @@ const trackerPixelAnalytics = (listaDeProdutosFinal, docFinal) => {
 
   });
 
-  window.fbq('track', 'Purchase', { value: docFinal.valorTotal, currency: 'BRL' });
+  //window.fbq('track', 'Purchase', { value: docFinal.valorTotal, currency: 'BRL' });
 
   logEvent(getAnalytics(), 'purchase', {
     transaction_id: docFinal.idCompra,
@@ -544,7 +538,7 @@ function ConfirmacaoCompra({ objeto, erro, state, status, salvar, classes }) {
         {finalTitulo[status]}
       </Typography>
       <Typography >
-        {finalDescricao[status]}
+        {state.error ? state.error : finalDescricao[status]}
       </Typography>
       {
         status === 0
@@ -688,7 +682,11 @@ export default function Checkout(props) {
         const refDocUsuario = doc(db, 'Usuario', usr.uid);
         const docSnap = await getDoc(refDocUsuario);
         const docUsuario = docSnap.exists() ? docSnap.data() : null;
-        
+
+        if (!docUsuario) {
+          abrirLogin();
+        }
+
         setState((prevState) => ({
           ...prevState,
           usuario: docUsuario
@@ -742,51 +740,70 @@ export default function Checkout(props) {
   }, []);
 
 
-  const salvarRevenda = useCallback(() => {
+  const salvarRevenda = () => {
 
-    const listaDeProdutosFinal = getListaDeProdutos(state.lista);
-
-    const batch = writeBatch(db);
-
-    const refCompra = doc(collection(db, 'Revendas'));
-    const idRef = refCompra.id;
-    const refMinhaCompra = doc(db, 'MinhasRevendas', 'Usuario', state.usuario.uid, idRef);
-
-    const docFinal = getDocObjPedido(listaDeProdutosFinal, state.document, state.usuario, idRef);
-
-    batch.set(refCompra, docFinal);
-    batch.set(refMinhaCompra, docFinal);
-
-    listaDeProdutosFinal.map(item => {
-      const idRemove = item.idProdut;
-      const refCart = doc(db, 'listaRevendas', 'usuario', state.usuario.uid, idRemove);
-      batch.delete(refCart);
-    });
-
-    if (state.usuario.admConfirmado) {
-      const comissaoRef = doc(db, 'ComissoesAfiliados', idRef);
-      const minhaComissaoRef = doc(db, 'MinhasComissoesAfiliados', 'Usuario', state.usuario.uidAdm, idRef);
-      const docComissaoAfiliado = getDocObjComissaoAfiliado(docFinal);
-
-      batch.set(comissaoRef, docComissaoAfiliado);
-      batch.set(minhaComissaoRef, docComissaoAfiliado);
-
+    if (!state.usuario) {
+      abrirLogin();
     }
 
-    batch.commit().then(() => {
-      //state2
-      trackerPixelAnalytics(listaDeProdutosFinal, docFinal);
+    try {
+
+      const listaDeProdutosFinal = getListaDeProdutos(state.lista);
+
+      const batch = writeBatch(db);
+
+
+      const refCompra = doc(collection(db, 'Revendas'));
+      const idRef = refCompra.id;
+
+      const novoStateDocument = state.document;
+      novoStateDocument.listaDeProdutos = listaDeProdutosFinal;
+
+      const docFinal = getDocObjPedido(listaDeProdutosFinal, novoStateDocument, state.usuario, idRef);
+
+      const refMinhaCompra = doc(db, 'MinhasRevendas', 'Usuario', state.usuario.uid, idRef);
+
+      batch.set(refCompra, docFinal);
+      batch.set(refMinhaCompra, docFinal);
+
+      listaDeProdutosFinal.map(item => {
+        const idRemove = item.idProdut;
+        const refCart = doc(db, 'listaRevendas', 'usuario', state.usuario.uid, idRemove);
+        batch.delete(refCart);
+      });
+
+      if (state.usuario.admConfirmado) {
+        const comissaoRef = doc(db, 'ComissoesAfiliados', idRef);
+        const minhaComissaoRef = doc(db, 'MinhasComissoesAfiliados', 'Usuario', state.usuario.uidAdm, idRef);
+        const docComissaoAfiliado = getDocObjComissaoAfiliado(docFinal);
+
+        batch.set(comissaoRef, docComissaoAfiliado);
+        batch.set(minhaComissaoRef, docComissaoAfiliado);
+
+      }
+
+      batch.commit().then(() => {
+        //state2
+        //trackerPixelAnalytics(listaDeProdutosFinal, docFinal);
+
+        setState((prevState) => ({
+          ...prevState,
+          status: 1
+        }));
+
+      });
+
+    } catch (error) {
 
       setState((prevState) => ({
         ...prevState,
-        status: 1
+        activeStep: state.activeStep - 1,
+        status: 0,
       }));
-
-    }).catch(erro => {
       alert('Algo está impedindo a gente receber sua solicitação de compra, tente novamente');
-    });
+    }
 
-  }, [state]);
+  };
 
 
   if (!state.pagamento) {

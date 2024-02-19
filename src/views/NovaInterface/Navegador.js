@@ -29,6 +29,8 @@ import { Avatar } from '@material-ui/core';
 
 import fav from "fav2.png";
 import { verMinhasCarteira } from 'index';
+import { AccountBalance, AccountBox, AccountBoxRounded } from '@material-ui/icons';
+import { verMeuPerfil } from 'index';
 
 export const CATEGORIA_LIST = [
   "Combos",
@@ -127,6 +129,7 @@ const categories = [
       { id: 'Minhas Comissões', icon: <MonetizationOnIcon />, i: 'comissoes' },
       { id: 'Minha Carteira', icon: <AccountBalanceWalletIcon />, i: 'carteira' },
       { id: 'Meus Afiliados', icon: <GroupAddIcon />, i: 'afiliados' },
+      { id: 'Meu Perfil', icon: <AccountBox />, i: 'perfil' },
     ],
   }
 ];
@@ -197,6 +200,8 @@ function Navegador(props) {
       verMeusAfiliados();
     } else if (i === 'carteira') {
       verMinhasCarteira()
+    } else if (i === 'perfil') {
+      verMeuPerfil()
     } else {
       
     }

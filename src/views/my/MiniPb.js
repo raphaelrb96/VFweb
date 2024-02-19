@@ -5,7 +5,7 @@ import React from 'react';
 
 const ColorCircularProgress = withStyles({
   root: {
-    color: '#e00000',
+    color: '#1A237E',
   },
 })(CircularProgress);
 

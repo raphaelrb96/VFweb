@@ -263,17 +263,6 @@ const trackerPixel = (produto) => {
 
   let objContentId = [idProduto];
 
-
-  window.fbq('track', 'ViewContent', {
-    content_name: nome,
-    content_category: 'produtos',
-    value: valor,
-    currency: 'BRL',
-    content_ids: objContentId,
-    content_type: 'product',
-  });
-
-
   logEvent(getAnalytics(), 'view_item', {
     items: [
       {
@@ -285,6 +274,21 @@ const trackerPixel = (produto) => {
       }
     ]
   });
+
+  return;
+
+
+  window.fbq('track', 'ViewContent', {
+    content_name: nome,
+    content_category: 'produtos',
+    value: valor,
+    currency: 'BRL',
+    content_ids: objContentId,
+    content_type: 'product',
+  });
+
+
+  
 
   let objj = {
     "@context": "https://schema.org",
