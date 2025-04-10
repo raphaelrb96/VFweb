@@ -428,12 +428,7 @@ class Conclusao extends React.Component {
     const providerGoogle = new GoogleAuthProvider();
     auth.languageCode = 'pt';
 
-    await signInWithRedirect(auth, providerGoogle);
-
-    const result = await getRedirectResult(auth);
-
-    if (result) {
-      // This is the signed-in user
+    signInWithPopup(auth, providerGoogle).then((result) => {
       const user = result.user;
       this.setState({
         //usuario ta logado
@@ -442,11 +437,35 @@ class Conclusao extends React.Component {
         pb: true
       });
       this.carregarUsuario(user);
-    } else {
+    }).catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      alert(errorMessage);
       this.setState({
         pb: false
       });
-    }
+    });
+
+    //DESCONTINUADO
+    // await signInWithRedirect(auth, providerGoogle);
+    // const result = await getRedirectResult(auth);
+    // if (result) {
+    //   // This is the signed-in user
+    //   const user = result.user;
+    //   this.setState({
+    //     //usuario ta logado
+    //     activeStep: 1,
+    //     user: user,
+    //     pb: true
+    //   });
+    //   this.carregarUsuario(user);
+    // } else {
+    //   this.setState({
+    //     pb: false
+    //   });
+    // }
+
+
   }
 
   carregarDadosAdm() {

@@ -350,7 +350,7 @@ export let loginFaceMaster = () => {
 export let signOut = () => {
   authFirebase.signOut().then(function () {
     // Sign-out successful.
-    //window.location.reload();
+    window.location.reload();
   }).catch(function (error) {
     // An error happened.
   });

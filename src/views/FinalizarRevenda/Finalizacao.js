@@ -663,6 +663,10 @@ export default function Checkout(props) {
   useEffect(() => {
 
     const { location } = props;
+
+    console.log('location', location);
+
+
     if (!location?.state) {
       returnEmpty();
       return;
@@ -805,8 +809,9 @@ export default function Checkout(props) {
 
   };
 
+  console.log('state.pagamento', state.pagamento);
 
-  if (!state.pagamento) {
+  if (state.pagamento === null || state.pagamento === undefined) {
 
     return <Pb />;
 
