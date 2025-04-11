@@ -127,6 +127,7 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: `"Roboto Slab", "Times New Roman", serif`,
     fontWeight: "bold",
     fontSize: "16px",
+    paddingRight: '4px'
   },
   itemList: {
     color: "#000",
