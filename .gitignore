@@ -36,3 +36,5 @@ next-env.d.ts
 
 .firebase
 package-lock.json
+firebase-debug.log
+.firebase/hosting.YnVpbGQ.cache
