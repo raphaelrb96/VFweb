@@ -20,7 +20,7 @@ export default function GridContainer(props) {
   const { children, className, ...rest } = props;
   const classes = useStyles();
   return (
-    <Grid justifyContent="center" alignItems="center" container {...rest} className={classes.grid + " " + className}>
+    <Grid justifyContent="center" alignItems="flex-start" container {...rest} className={classes.grid + " " + className}>
       {children}
     </Grid>
   );

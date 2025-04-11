@@ -448,6 +448,10 @@ export let verMeuPerfil = () => {
   hist.push('/perfil');
 }
 
+export let verCategorias = () => {
+  hist.push('/categorias');
+}
+
 export let interfaceMain = () => {
   hist?.push('/');
   //window?.location.reload();

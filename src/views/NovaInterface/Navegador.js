@@ -22,6 +22,8 @@ import ShoppingCart from "@material-ui/icons/ShoppingCart";
 import MonetizationOnIcon from '@material-ui/icons/MonetizationOn';
 import GroupAddIcon from '@material-ui/icons/GroupAdd';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
+import CategoryIcon from '@material-ui/icons/Category';
+
 
 import { abrirPainelRevendas, homepage, abrirListaRevenda, verMinhasComissoes, verMeusAfiliados } from 'index.js';
 import CardAvatar from 'components/Card/CardAvatar';
@@ -31,6 +33,7 @@ import fav from "fav2.png";
 import { verMinhasCarteira } from 'index';
 import { AccountBalance, AccountBox, AccountBoxRounded } from '@material-ui/icons';
 import { verMeuPerfil } from 'index';
+import { verCategorias } from 'index';
 
 export const CATEGORIA_LIST = [
   "Combos",
@@ -124,6 +127,7 @@ const categories = [
     id: 'Atalhos',
     children: [
       { id: 'Tela principal', icon: <HomeIcon />, i: 'home' },
+      { id: 'Categorias', icon: <CategoryIcon />, i: 'categorias' },
       { id: 'Painel do Revendedor', icon: <DnsRoundedIcon />, i: 'revendedor' },
       { id: 'Carrinho de Venda', icon: <ShoppingCart />, i: 'cart' },
       { id: 'Minhas Comissões', icon: <MonetizationOnIcon />, i: 'comissoes' },
@@ -202,6 +206,8 @@ function Navegador(props) {
       verMinhasCarteira()
     } else if (i === 'perfil') {
       verMeuPerfil()
+    } else if (i === 'categorias') {
+      verCategorias()
     } else {
       
     }
