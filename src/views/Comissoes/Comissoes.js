@@ -113,11 +113,11 @@ const useStyles = makeStyles((theme) => ({
   },
   textStatus: {
     fontSize: "20px",
-    color: "#060D51",
     fontWeight: "bold",
   },
   nomeProduto: {
     fontSize: "16px",
+    color: "#000",
   },
   textValor: {
     fontFamily: `"Roboto Slab", "Times New Roman", serif`,
@@ -126,7 +126,15 @@ const useStyles = makeStyles((theme) => ({
   smalltextValor: {
     fontFamily: `"Roboto Slab", "Times New Roman", serif`,
     fontWeight: "bold",
-    fontSize: '16px'
+    fontSize: "16px",
+  },
+  itemList: {
+    color: "#000",
+  },
+  obsCancelamento: {
+    marginTop: '16px',
+    paddingLeft: '26px',
+    paddingRight: '26px'
   }
 }));
 
@@ -144,6 +152,10 @@ const getStatus = (s) => {
   } else {
     return "Aguarde";
   }
+};
+
+const upperFont = (s) => {
+  return String(s).toLocaleUpperCase();
 };
 
 const getMotivoCancelamento = (id) => {
@@ -343,22 +355,31 @@ class ItemComissaoVenda extends React.Component {
               <span className={this.props.classes.smalltextValor}>R$</span>
               {this.props.comissao},00
             </h2>
+            <b className={this.props.classes.textStatus}>{this.props.status}</b>
+            {this.props.status === "Cancelada" ? (
+              <div className={this.props.classes.obsCancelamento}>
+                <b>{JSON.stringify(this.props.obsCancelamento)}</b>
+              </div>
+            ) : null}
             <ul>
+              <li></li>
               <li>
-                <b className={this.props.classes.textStatus}>
-                  {this.props.status}
-                </b>
+                <div className={this.props.classes.itemList}>
+                  {upperFont(this.props.nome)}
+                </div>
               </li>
-
-              {this.props.status === "Cancelada" ? (
+              <li>
+                <div className={this.props.classes.itemList}>
+                  {this.props.telefone}
+                </div>
+              </li>
+              {nomeProduto ? (
                 <li>
-                  <b>{JSON.stringify(this.props.obsCancelamento)}</b>
+                  <div className={this.props.classes.nomeProduto}>
+                    {upperFont(nomeProduto)}
+                  </div>
                 </li>
               ) : null}
-
-              <li>{this.props.nome}</li>
-              <li>{this.props.telefone}</li>
-              {nomeProduto ? <li className={this.props.classes.nomeProduto}>{nomeProduto}</li> : null}
             </ul>
           </CardBody>
         </Card>
